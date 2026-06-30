@@ -31,13 +31,17 @@
             background-color: #34a853; color: white; border: none; padding: 16px;
             font-size: 18px; font-weight: bold; border-radius: 12px; cursor: pointer; width: 100%;
             box-shadow: 0 4px 10px rgba(52,168,83,0.2);
+            margin-bottom: 10px;
         }
         .screen { display: none; }
         .active { display: block; }
-
+        
         /* Стили кабинета родителя */
         .parent-stat { background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 12px; border-left: 4px solid #2b7de9; font-size: 16px; }
         .parent-stat span { font-weight: bold; color: #2b7de9; }
+        textarea, input {
+            width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -57,12 +61,19 @@
     <div id="parent-screen" class="screen">
         <h1>👨‍👩‍👦 Кабинет Родителя</h1>
         <p style="text-align:center; color:#666; margin-bottom: 20px;">Управление обучением и балансом</p>
-
+        
         <div class="parent-stat">Текущая норма: <span>3 страницы в день</span></div>
         <div class="parent-stat">Награда за тест: <span>10 Бук-коинов</span></div>
-        <div class="parent-stat">Баланс ребенка: <span>0 Бук-коинов</span></div>
-
-        <button id="parent-close-btn" style="background-color: #757575; margin-top: 20px;">Закрыть кабинет</button>
+        
+        <h3 style="margin-top:20px; color:#444;">Загрузить свой текст и тест:</h3>
+        <input type="text" id="book-title" placeholder="Название книги/рассказа">
+        <textarea id="book-text" rows="4" placeholder="Вставьте сюда текст для чтения ребенком..."></textarea>
+        <input type="text" id="quiz-question" placeholder="Вопрос теста">
+        <input type="text" id="opt-a" placeholder="Вариант А (Правильный)">
+        <input type="text" id="opt-b" placeholder="Вариант Б">
+        
+        <button id="save-content-btn" style="background-color: #2b7de9;">💾 Отправить тест в бота</button>
+        <button id="parent-close-btn" style="background-color: #757575;">Закрыть кабинет</button>
     </div>
 </div>
 
@@ -70,24 +81,43 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // Получаем ID пользователя из Telegram системы
+    // Забираем ID пользователя
     const tgUser = tg.initDataUnsafe?.user;
-    const userId = tgUser ? tgUser.id : null;
+    // Превращаем в число принудительно, чтобы избежать багов с типами данных
+    const userId = tgUser ? Number(tgUser.id) : null;
 
-    // СЮДА ВСТАВЬ СВОЙ ID ИЗ ТЕРМИНАЛА ВМЕСТО ЗАГЛУШКИ:
-    const MY_PARENT_ID = 220138923;
+    // Твой верифицированный ID
+    const MY_PARENT_ID = 220138923; 
 
-    if (userId === MY_PARENT_ID) {
-        // Если открыл ты (Родитель) — показываем админку
+    // Если Telegram не отдал ID (такое бывает в превью), покажем админку для теста
+    if (userId === MY_PARENT_ID || userId === null || userId === 0) {
         document.getElementById('parent-screen').classList.add('active');
     } else {
-        // Если открыл кто-то другой (Ребенок) — включаем читалку
         document.getElementById('child-screen').classList.add('active');
     }
 
-    // Логика кнопок
+    // Ребенок отправляет триггер теста
     document.getElementById('test-btn').addEventListener('click', () => {
         tg.sendData("start_test_clicked");
+        tg.close();
+    });
+
+    // Родитель отправляет кастомный контент в бота
+    document.getElementById('save-content-btn').addEventListener('click', () => {
+        const title = document.getElementById('book-title').value;
+        const text = document.getElementById('book-text').value;
+        const question = document.getElementById('quiz-question').value;
+        const optA = document.getElementById('opt-a').value;
+        const optB = document.getElementById('opt-b').value;
+
+        if(!title || !text || !question || !optA || !optB) {
+            alert("Пожалуйста, заполните все поля!");
+            return;
+        }
+
+        // Упаковываем данные в специальную строку с разделителем "|"
+        const payload = `new_box|${title}|${text}|${question}|${optA}|${optB}`;
+        tg.sendData(payload);
         tg.close();
     });
 
