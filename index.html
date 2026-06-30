@@ -81,15 +81,15 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    # Читаем параметры из адресной строки сайта
+    // Читаем параметры из адресной строки сайта
     const urlParams = new URLSearchParams(window.location.search);
     const userRole = urlParams.get('role'); // Получаем 'parent' или 'child'
 
-    # Железное разделение экранов по роли из бота
+    // Железное разделение экранов по роли из бота
     if (userRole === 'parent') {
         document.getElementById('parent-screen').classList.add('active');
     } else {
-        # Ребенок (или если роль не передалась) видит читалку
+        // Ребенок (или если роль не передалась) видит читалку
         document.getElementById('child-screen').classList.add('active');
     }
 
