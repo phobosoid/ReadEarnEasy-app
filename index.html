@@ -81,18 +81,15 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // Забираем ID пользователя
-    const tgUser = tg.initDataUnsafe?.user;
-    // Превращаем в число принудительно, чтобы избежать багов с типами данных
-    const userId = tgUser ? Number(tgUser.id) : null;
+    # Читаем параметры из адресной строки сайта
+    const urlParams = new URLSearchParams(window.location.search);
+    const userRole = urlParams.get('role'); // Получаем 'parent' или 'child'
 
-    // Твой верифицированный ID
-    const MY_PARENT_ID = 220138923; 
-
-    // Если Telegram не отдал ID (такое бывает в превью), покажем админку для теста
-    if (userId === MY_PARENT_ID || userId === null || userId === 0) {
+    # Железное разделение экранов по роли из бота
+    if (userRole === 'parent') {
         document.getElementById('parent-screen').classList.add('active');
     } else {
+        # Ребенок (или если роль не передалась) видит читалку
         document.getElementById('child-screen').classList.add('active');
     }
 
@@ -115,7 +112,6 @@
             return;
         }
 
-        // Упаковываем данные в специальную строку с разделителем "|"
         const payload = `new_box|${title}|${text}|${question}|${optA}|${optB}`;
         tg.sendData(payload);
         tg.close();
