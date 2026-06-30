@@ -89,8 +89,17 @@
     if (userRole === 'parent') {
         document.getElementById('parent-screen').classList.add('active');
     } else {
-        // Ребенок (или если роль не передалась) видит читалку
         document.getElementById('child-screen').classList.add('active');
+        
+        // Вытаскиваем кастомный текст книги из ссылки
+        const customTitle = urlParams.get('title');
+        const customText = urlParams.get('text');
+        
+        // Если родитель уже загрузил что-то новое, подменяем контент на экране ребенка
+        if (customTitle && customText) {
+            document.querySelector('#child-screen h1').innerHTML = "📚 Чтение: " + decodeURIComponent(customTitle);
+            document.querySelector('#child-screen .text-content').innerHTML = decodeURIComponent(customText);
+        }
     }
 
     // Ребенок отправляет триггер теста
