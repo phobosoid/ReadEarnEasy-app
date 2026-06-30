@@ -34,9 +34,9 @@
         }
         .screen { display: none; }
         .active { display: block; }
-        
-        /* Стили кабинет родителя */
-        .parent-stat { background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 12px; border-left: 4px solid #2b7de9; }
+
+        /* Стили кабинета родителя */
+        .parent-stat { background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 12px; border-left: 4px solid #2b7de9; font-size: 16px; }
         .parent-stat span { font-weight: bold; color: #2b7de9; }
     </style>
 </head>
@@ -56,12 +56,12 @@
 
     <div id="parent-screen" class="screen">
         <h1>👨‍👩‍👦 Кабинет Родителя</h1>
-        <p style="text-align:center; color:#666;">Управление обучением и балансом</p>
-        
+        <p style="text-align:center; color:#666; margin-bottom: 20px;">Управление обучением и балансом</p>
+
         <div class="parent-stat">Текущая норма: <span>3 страницы в день</span></div>
         <div class="parent-stat">Награда за тест: <span>10 Бук-коинов</span></div>
         <div class="parent-stat">Баланс ребенка: <span>0 Бук-коинов</span></div>
-        
+
         <button id="parent-close-btn" style="background-color: #757575; margin-top: 20px;">Закрыть кабинет</button>
     </div>
 </div>
@@ -70,21 +70,18 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // Получаем ID пользователя из Telegram
+    // Получаем ID пользователя из Telegram системы
     const tgUser = tg.initDataUnsafe?.user;
     const userId = tgUser ? tgUser.id : null;
 
-    // В MVP мы временно проверяем роль прямо тут.
-    // Если мы хотим, чтобы ты (разработчик) видел экран родителя, 
-    // нам нужно временно завязаться на твой личный Telegram ID.
-    // Замени 123456789 на свой реальный Telegram ID (его можно увидеть в терминале при запуске бота)
-    const MY_PARENT_ID = 220138923; 
+    // СЮДА ВСТАВЬ СВОЙ ID ИЗ ТЕРМИНАЛА ВМЕСТО ЗАГЛУШКИ:
+    const MY_PARENT_ID = 220138923;
 
     if (userId === MY_PARENT_ID) {
-        // Показываем экран родителя
+        // Если открыл ты (Родитель) — показываем админку
         document.getElementById('parent-screen').classList.add('active');
     } else {
-        // Все остальные (включая ребенка) видят экран чтения
+        // Если открыл кто-то другой (Ребенок) — включаем читалку
         document.getElementById('child-screen').classList.add('active');
     }
 
