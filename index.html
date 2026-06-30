@@ -4,78 +4,98 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Читай и Зарабатывай</title>
-    <!-- Подключаем скрипт Telegram, чтобы сайт умел общаться с ботом -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f9f9f9;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f9;
             color: #333;
             margin: 0;
-            padding: 20px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
         .container {
-            max-width: 600px;
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
-        h1 {
-            color: #2b7de9;
-            font-size: 24px;
-            text-align: center;
-        }
-        .text-content {
-            font-size: 18px;
-            line-height: 1.6;
-            margin-bottom: 30px;
-            text-align: justify;
-        }
-        button {
-            background-color: #34a853;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 10px;
-            cursor: pointer;
             width: 100%;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 500px;
+            background: white;
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            box-sizing: border-box;
         }
-        button:active {
-            transform: scale(0.98);
+        h1 { color: #2b7de9; font-size: 22px; text-align: center; margin-top: 0; }
+        .text-content { font-size: 18px; line-height: 1.6; margin-bottom: 24px; text-align: left; }
+        button {
+            background-color: #34a853; color: white; border: none; padding: 16px;
+            font-size: 18px; font-weight: bold; border-radius: 12px; cursor: pointer; width: 100%;
+            box-shadow: 0 4px 10px rgba(52,168,83,0.2);
         }
+        .screen { display: none; }
+        .active { display: block; }
+        
+        /* Стили кабинет родителя */
+        .parent-stat { background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 12px; border-left: 4px solid #2b7de9; }
+        .parent-stat span { font-weight: bold; color: #2b7de9; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>📚 Чтение: "Синие листья"</h1>
-
-    <div class="text-content">
-        У Кати было два зелёных карандаша. А у Лены ни одного. Вот Лена и просит Катю: <br>
-        — Дай мне зелёный карандаш. А Катя говорит: — Спрошу у мамы.<br><br>
-        Приходят на другой день в школу. Лена спрашивает: — Позволила мама? <br>
-        А Катя вздохнула и говорит: — Мама-то позволила, а брата я не спросила...
+    <div id="child-screen" class="screen">
+        <h1>📚 Чтение: "Синие листья"</h1>
+        <div class="text-content">
+            У Кати было два зелёных карандаша. А у Лены ни одного. Вот Лена и просит Катю: <br>
+            — Дай мне зелёный карандаш. А Катя говорит: — Спрошу у мамы.<br><br>
+            Приходят на другой день в школу. Лена спрашивает: — Позволила мама? <br>
+            А Катя вздохнула и говорит: — Мама-то позволила, а брата я не спросила...
+        </div>
+        <button id="test-btn">Пройти тест и получить Бук-коины! 💰</button>
     </div>
 
-    <button id="test-btn">Пройти тест и получить Бук-коины! 💰</button>
+    <div id="parent-screen" class="screen">
+        <h1>👨‍👩‍👦 Кабинет Родителя</h1>
+        <p style="text-align:center; color:#666;">Управление обучением и балансом</p>
+        
+        <div class="parent-stat">Текущая норма: <span>3 страницы в день</span></div>
+        <div class="parent-stat">Награда за тест: <span>10 Бук-коинов</span></div>
+        <div class="parent-stat">Баланс ребенка: <span>0 Бук-коинов</span></div>
+        
+        <button id="parent-close-btn" style="background-color: #757575; margin-top: 20px;">Закрыть кабинет</button>
+    </div>
 </div>
 
 <script>
-    // Инициализируем Telegram WebApp
     const tg = window.Telegram.WebApp;
-    tg.expand(); // Раскрываем приложение на весь экран телефона
+    tg.expand();
 
+    // Получаем ID пользователя из Telegram
+    const tgUser = tg.initDataUnsafe?.user;
+    const userId = tgUser ? tgUser.id : null;
+
+    // В MVP мы временно проверяем роль прямо тут.
+    // Если мы хотим, чтобы ты (разработчик) видел экран родителя, 
+    // нам нужно временно завязаться на твой личный Telegram ID.
+    // Замени 123456789 на свой реальный Telegram ID (его можно увидеть в терминале при запуске бота)
+    const MY_PARENT_ID = 123456789; 
+
+    if (userId === MY_PARENT_ID) {
+        // Показываем экран родителя
+        document.getElementById('parent-screen').classList.add('active');
+    } else {
+        // Все остальные (включая ребенка) видят экран чтения
+        document.getElementById('child-screen').classList.add('active');
+    }
+
+    // Логика кнопок
     document.getElementById('test-btn').addEventListener('click', () => {
-        // Когда ребенок нажимает кнопку, мы отправляем боту сигнал
         tg.sendData("start_test_clicked");
-        tg.close(); // Закрываем Mini App
+        tg.close();
+    });
+
+    document.getElementById('parent-close-btn').addEventListener('click', () => {
+        tg.close();
     });
 </script>
 </body>
