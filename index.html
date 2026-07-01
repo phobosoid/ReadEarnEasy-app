@@ -35,12 +35,12 @@
         }
         .screen { display: none; }
         .active { display: block; }
-        
+
         .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #f8f9fa; padding: 12px; border-radius: 10px; }
         .setting-row label { font-weight: 500; font-size: 15px; }
         .setting-row input { width: 70px; padding: 8px; text-align: center; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; }
-        
-        input[type="text"], select {
+
+        textarea, input[type="text"], select {
             width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px;
         }
         .toggle-box { display: none; }
@@ -49,19 +49,19 @@
 </head>
 <body>
 
+<body>
+
 <div class="container">
-    <!-- ЭКРАН РЕБЕНКА -->
-    <div id="child-screen" class="screen">
-        <h1>📚 Чтение</h1>
-        <div class="text-content">Загрузка текста...</div>
-        <button id="test-btn">Пройти тест и получить Бук-коины! 💰</button>
+    <div id="child-screen" class="screen" style="text-align: center;">
+        <h1>🏁 Готов к тесту?</h1>
+        <p style="font-size:16px; color:#666; margin-bottom:24px;">Если ты внимательно прочитал рассказ в чате, нажимай кнопку ниже и отвечай на вопрос викторины!</p>
+        <button id="test-btn">🚀 Запустить викторину!</button>
     </div>
 
-    <!-- ЭКРАН РОДИТЕЛЯ -->
     <div id="parent-screen" class="screen">
         <h1>👨‍👩‍👦 Кабинет Родителя</h1>
         <p style="text-align:center; color:#666; margin-bottom: 20px;">Настройки обучения и контента</p>
-        
+
         <div class="setting-row">
             <label>Норма (страниц в день):</label>
             <input type="number" id="daily-norm" value="3" min="1">
@@ -70,22 +70,22 @@
             <label>Награда за тест (коинов):</label>
             <input type="number" id="reward-amount" value="10" min="1">
         </div>
-        
+
         <h3 style="margin-top:20px; color:#444;">Задание по книге</h3>
         <input type="text" id="book-title" placeholder="Название рассказа / главы">
-        
+
         <label style="font-weight: 500; font-size: 15px; display:block; margin-bottom:8px;">Создание вопросов:</label>
         <select id="generation-mode">
             <option value="ai">🤖 Сгенерировать автоматически (ИИ)</option>
             <option value="manual">✍️ Ввести вопросы вручную</option>
         </select>
-        
+
         <div id="manual-questions-box" class="toggle-box">
             <input type="text" id="quiz-question" placeholder="Вопрос теста">
             <input type="text" id="opt-a" placeholder="Вариант А (Правильный)">
             <input type="text" id="opt-b" placeholder="Вариант Б (Неправильный)">
         </div>
-        
+
         <button id="save-content-btn" style="background-color: #2b7de9; margin-top: 10px;">💾 Настроить параметры задания</button>
         <button id="parent-close-btn" style="background-color: #757575;">Закрыть кабинет</button>
     </div>
@@ -103,12 +103,6 @@
             document.getElementById('parent-screen').classList.add('active');
         } else {
             document.getElementById('child-screen').classList.add('active');
-            const customTitle = urlParams.get('title');
-            const customText = urlParams.get('text');
-            if (customTitle && customText) {
-                document.querySelector('#child-screen h1').innerHTML = "📚 Чтение: " + decodeURIComponent(customTitle);
-                document.querySelector('#child-screen .text-content').innerHTML = decodeURIComponent(customText);
-            }
         }
 
         document.getElementById('generation-mode').addEventListener('change', (e) => {
@@ -156,9 +150,7 @@
                 const safeOptA = optA.replace(/\|/g, " ");
                 const safeOptB = optB.replace(/\|/g, " ");
 
-                // Теперь передаем только метаданные без огромного текста книги!
                 const payload = `config_meta|${norm}|${reward}|${safeTitle}|${mode}|${safeQuestion}|${safeOptA}|${safeOptB}`;
-                
                 tg.sendData(payload);
                 tg.close();
             } catch (err) {
