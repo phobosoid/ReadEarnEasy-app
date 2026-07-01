@@ -37,42 +37,60 @@
         .active { display: block; }
         
         /* Стили кабинета родителя */
-        .parent-stat { background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 12px; border-left: 4px solid #2b7de9; font-size: 16px; }
-        .parent-stat span { font-weight: bold; color: #2b7de9; }
-        textarea, input {
+        .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #f8f9fa; padding: 12px; border-radius: 10px; }
+        .setting-row label { font-weight: 500; font-size: 15px; }
+        .setting-row input { width: 70px; padding: 8px; text-align: center; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; }
+        
+        textarea, input[type="text"], select {
             width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px;
         }
+        .toggle-box { display: none; }
+        .toggle-box.visible { display: block; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <!-- ЭКРАН РЕБЕНКА -->
     <div id="child-screen" class="screen">
-        <h1>📚 Чтение: "Синие листья"</h1>
-        <div class="text-content">
-            У Кати было два зелёных карандаша. А у Лены ни одного. Вот Лена и просит Катю: <br>
-            — Дай мне зелёный карандаш. А Катя говорит: — Спрошу у мамы.<br><br>
-            Приходят на другой день в школу. Лена спрашивает: — Позволила мама? <br>
-            А Катя вздохнула и говорит: — Мама-то позволила, а брата я не спросила...
-        </div>
+        <h1>📚 Чтение</h1>
+        <div class="text-content">Загрузка текста...</div>
         <button id="test-btn">Пройти тест и получить Бук-коины! 💰</button>
     </div>
 
+    <!-- ЭКРАН РОДИТЕЛЯ -->
     <div id="parent-screen" class="screen">
         <h1>👨‍👩‍👦 Кабинет Родителя</h1>
-        <p style="text-align:center; color:#666; margin-bottom: 20px;">Управление обучением и балансом</p>
+        <p style="text-align:center; color:#666; margin-bottom: 20px;">Настройки обучения и контента</p>
         
-        <div class="parent-stat">Текущая норма: <span>3 страницы в день</span></div>
-        <div class="parent-stat">Награда за тест: <span>10 Бук-коинов</span></div>
+        <!-- Управление нормой и наградой -->
+        <div class="setting-row">
+            <label>Норма (страниц в день):</label>
+            <input type="number" id="daily-norm" value="3" min="1">
+        </div>
+        <div class="setting-row">
+            <label>Награда за тест (коинов):</label>
+            <input type="number" id="reward-amount" value="10" min="1">
+        </div>
         
-        <h3 style="margin-top:20px; color:#444;">Загрузить свой текст и тест:</h3>
-        <input type="text" id="book-title" placeholder="Название книги/рассказа">
+        <h3 style="margin-top:20px; color:#444;">Загрузка материала</h3>
+        <input type="text" id="book-title" placeholder="Название рассказа / главы">
         <textarea id="book-text" rows="4" placeholder="Вставьте сюда текст для чтения ребенком..."></textarea>
-        <input type="text" id="quiz-question" placeholder="Вопрос теста">
-        <input type="text" id="opt-a" placeholder="Вариант А (Правильный)">
-        <input type="text" id="opt-b" placeholder="Вариант Б">
         
-        <button id="save-content-btn" style="background-color: #2b7de9;">💾 Отправить тест в бота</button>
+        <label style="font-weight: 500; font-size: 15px; display:block; margin-bottom:8px;">Создание вопросов:</label>
+        <select id="generation-mode">
+            <option value="ai">🤖 Сгенерировать автоматически (ИИ)</option>
+            <option value="manual">✍️ Ввести вопросы вручную</option>
+        </select>
+        
+        <!-- Блок ручного ввода вопросов (по умолчанию скрыт, показывается при выборе 'manual') -->
+        <div id="manual-questions-box" class="toggle-box">
+            <input type="text" id="quiz-question" placeholder="Вопрос теста">
+            <input type="text" id="opt-a" placeholder="Вариант А (Правильный)">
+            <input type="text" id="opt-b" placeholder="Вариант Б (Неправильный)">
+        </div>
+        
+        <button id="save-content-btn" style="background-color: #2b7de9; margin-top: 10px;">💾 Сохранить настройки и текст</button>
         <button id="parent-close-btn" style="background-color: #757575;">Закрыть кабинет</button>
     </div>
 </div>
@@ -81,47 +99,65 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // Читаем параметры из адресной строки сайта
     const urlParams = new URLSearchParams(window.location.search);
-    const userRole = urlParams.get('role'); // Получаем 'parent' или 'child'
+    const userRole = urlParams.get('role');
 
-    // Железное разделение экранов по роли из бота
     if (userRole === 'parent') {
         document.getElementById('parent-screen').classList.add('active');
     } else {
         document.getElementById('child-screen').classList.add('active');
-        
-        // Вытаскиваем кастомный текст книги из ссылки
         const customTitle = urlParams.get('title');
         const customText = urlParams.get('text');
-        
-        // Если родитель уже загрузил что-то новое, подменяем контент на экране ребенка
         if (customTitle && customText) {
             document.querySelector('#child-screen h1').innerHTML = "📚 Чтение: " + decodeURIComponent(customTitle);
             document.querySelector('#child-screen .text-content').innerHTML = decodeURIComponent(customText);
         }
     }
 
-    // Ребенок отправляет триггер теста
+    // Логика переключения режима генерации вопросов
+    document.getElementById('generation-mode').addEventListener('change', (e) => {
+        const box = document.getElementById('manual-questions-box');
+        if (e.target.value === 'manual') {
+            box.classList.add('visible');
+        } else {
+            box.classList.remove('visible');
+        }
+    });
+
     document.getElementById('test-btn').addEventListener('click', () => {
         tg.sendData("start_test_clicked");
         tg.close();
     });
 
-    // Родитель отправляет кастомный контент в бота
+    // Отправка конфигурации родителем
     document.getElementById('save-content-btn').addEventListener('click', () => {
+        const norm = document.getElementById('daily-norm').value;
+        const reward = document.getElementById('reward-amount').value;
         const title = document.getElementById('book-title').value;
         const text = document.getElementById('book-text').value;
-        const question = document.getElementById('quiz-question').value;
-        const optA = document.getElementById('opt-a').value;
-        const optB = document.getElementById('opt-b').value;
+        const mode = document.getElementById('generation-mode').value;
 
-        if(!title || !text || !question || !optA || !optB) {
-            alert("Пожалуйста, заполните все поля!");
+        if(!title || !text || !norm || !reward) {
+            alert("Пожалуйста, заполните базовые поля (Норма, Награда, Название и Текст)!");
             return;
         }
 
-        const payload = `new_box|${title}|${text}|${question}|${optA}|${optB}`;
+        let question = "auto_ai";
+        let optA = "auto_ai";
+        let optB = "auto_ai";
+
+        if (mode === 'manual') {
+            question = document.getElementById('quiz-question').value;
+            optA = document.getElementById('opt-a').value;
+            optB = document.getElementById('opt-b').value;
+            if(!question || !optA || !optB) {
+                alert("Пожалуйста, заполните поля вопроса или переключитесь на ИИ!");
+                return;
+            }
+        }
+
+        // Собираем всё в единую строку конфигурации через разделитель "|"
+        const payload = `config_box|${norm}|${reward}|${title}|${text}|${mode}|${question}|${optA}|${optB}`;
         tg.sendData(payload);
         tg.close();
     });
