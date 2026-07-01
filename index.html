@@ -36,7 +36,6 @@
         .screen { display: none; }
         .active { display: block; }
         
-        /* Стили кабинета родителя */
         .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #f8f9fa; padding: 12px; border-radius: 10px; }
         .setting-row label { font-weight: 500; font-size: 15px; }
         .setting-row input { width: 70px; padding: 8px; text-align: center; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; }
@@ -63,7 +62,6 @@
         <h1>👨‍👩‍👦 Кабинет Родителя</h1>
         <p style="text-align:center; color:#666; margin-bottom: 20px;">Настройки обучения и контента</p>
         
-        <!-- Управление нормой и наградой -->
         <div class="setting-row">
             <label>Норма (страниц в день):</label>
             <input type="number" id="daily-norm" value="3" min="1">
@@ -83,7 +81,6 @@
             <option value="manual">✍️ Ввести вопросы вручную</option>
         </select>
         
-        <!-- Блок ручного ввода вопросов (по умолчанию скрыт, показывается при выборе 'manual') -->
         <div id="manual-questions-box" class="toggle-box">
             <input type="text" id="quiz-question" placeholder="Вопрос теста">
             <input type="text" id="opt-a" placeholder="Вариант А (Правильный)">
@@ -96,75 +93,91 @@
 </div>
 
 <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    try {
+        const tg = window.Telegram.WebApp;
+        tg.expand();
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const userRole = urlParams.get('role');
+        const urlParams = new URLSearchParams(window.location.search);
+        const userRole = urlParams.get('role');
 
-    if (userRole === 'parent') {
-        document.getElementById('parent-screen').classList.add('active');
-    } else {
-        document.getElementById('child-screen').classList.add('active');
-        const customTitle = urlParams.get('title');
-        const customText = urlParams.get('text');
-        if (customTitle && customText) {
-            document.querySelector('#child-screen h1').innerHTML = "📚 Чтение: " + decodeURIComponent(customTitle);
-            document.querySelector('#child-screen .text-content').innerHTML = decodeURIComponent(customText);
-        }
-    }
-
-    // Логика переключения режима генерации вопросов
-    document.getElementById('generation-mode').addEventListener('change', (e) => {
-        const box = document.getElementById('manual-questions-box');
-        if (e.target.value === 'manual') {
-            box.classList.add('visible');
+        if (userRole === 'parent') {
+            document.getElementById('parent-screen').classList.add('active');
         } else {
-            box.classList.remove('visible');
-        }
-    });
-
-    document.getElementById('test-btn').addEventListener('click', () => {
-        tg.sendData("start_test_clicked");
-        tg.close();
-    });
-
-    // Отправка конфигурации родителем
-    document.getElementById('save-content-btn').addEventListener('click', () => {
-        const norm = document.getElementById('daily-norm').value;
-        const reward = document.getElementById('reward-amount').value;
-        const title = document.getElementById('book-title').value;
-        const text = document.getElementById('book-text').value;
-        const mode = document.getElementById('generation-mode').value;
-
-        if(!title || !text || !norm || !reward) {
-            alert("Пожалуйста, заполните базовые поля (Норма, Награда, Название и Текст)!");
-            return;
-        }
-
-        let question = "auto_ai";
-        let optA = "auto_ai";
-        let optB = "auto_ai";
-
-        if (mode === 'manual') {
-            question = document.getElementById('quiz-question').value;
-            optA = document.getElementById('opt-a').value;
-            optB = document.getElementById('opt-b').value;
-            if(!question || !optA || !optB) {
-                alert("Пожалуйста, заполните поля вопроса или переключитесь на ИИ!");
-                return;
+            document.getElementById('child-screen').classList.add('active');
+            const customTitle = urlParams.get('title');
+            const customText = urlParams.get('text');
+            if (customTitle && customText) {
+                document.querySelector('#child-screen h1').innerHTML = "📚 Чтение: " + decodeURIComponent(customTitle);
+                document.querySelector('#child-screen .text-content').innerHTML = decodeURIComponent(customText);
             }
         }
 
-        // Собираем всё в единую строку конфигурации через разделитель "|"
-        const payload = `config_box|${norm}|${reward}|${title}|${text}|${mode}|${question}|${optA}|${optB}`;
-        tg.sendData(payload);
-        tg.close();
-    });
+        // Переключение полей ввода вопросов
+        document.getElementById('generation-mode').addEventListener('change', (e) => {
+            const box = document.getElementById('manual-questions-box');
+            if (e.target.value === 'manual') {
+                box.classList.add('visible');
+            } else {
+                box.classList.remove('visible');
+            }
+        });
 
-    document.getElementById('parent-close-btn').addEventListener('click', () => {
-        tg.close();
-    });
+        document.getElementById('test-btn').addEventListener('click', () => {
+            tg.sendData("start_test_clicked");
+            tg.close();
+        });
+
+        // Безопасный клик по кнопке сохранения
+        document.getElementById('save-content-btn').addEventListener('click', () => {
+            try {
+                const norm = document.getElementById('daily-norm').value;
+                const reward = document.getElementById('reward-amount').value;
+                const title = document.getElementById('book-title').value;
+                const text = document.getElementById('book-text').value;
+                const mode = document.getElementById('generation-mode').value;
+
+                if (!title || !text || !norm || !reward) {
+                    alert("Заполните все базовые поля!");
+                    return;
+                }
+
+                let question = "auto_ai";
+                let optA = "auto_ai";
+                let optB = "auto_ai";
+
+                if (mode === 'manual') {
+                    question = document.getElementById('quiz-question').value;
+                    optA = document.getElementById('opt-a').value;
+                    optB = document.getElementById('opt-b').value;
+                    if (!question || !optA || !optB) {
+                        alert("Заполните поля ручного ввода вопросов!");
+                        return;
+                    }
+                }
+
+                // Очищаем строки от символа |, чтобы бэкенд не сошел с ума при делении split('|')
+                const safeTitle = title.replace(/\|/g, " ");
+                const safeText = text.replace(/\|/g, " ");
+                const safeQuestion = question.replace(/\|/g, " ");
+                const safeOptA = optA.replace(/\|/g, " ");
+                const safeOptB = optB.replace(/\|/g, " ");
+
+                const payload = `config_box|${norm}|${reward}|${safeTitle}|${safeText}|${mode}|${safeQuestion}|${safeOptA}|${safeOptB}`;
+                
+                tg.sendData(payload);
+                tg.close();
+            } catch (err) {
+                alert("Ошибка внутри обработчика кнопки: " + err.message);
+            }
+        });
+
+        document.getElementById('parent-close-btn').addEventListener('click', () => {
+            tg.close();
+        });
+
+    } catch (globalErr) {
+        alert("Глобальная ошибка инициализации: " + globalErr.message);
+    }
 </script>
 </body>
 </html>
