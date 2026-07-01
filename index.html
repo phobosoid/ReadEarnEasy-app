@@ -40,7 +40,7 @@
         .setting-row label { font-weight: 500; font-size: 15px; }
         .setting-row input { width: 70px; padding: 8px; text-align: center; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; }
         
-        textarea, input[type="text"], select {
+        input[type="text"], select {
             width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px;
         }
         .toggle-box { display: none; }
@@ -71,9 +71,8 @@
             <input type="number" id="reward-amount" value="10" min="1">
         </div>
         
-        <h3 style="margin-top:20px; color:#444;">Загрузка материала</h3>
+        <h3 style="margin-top:20px; color:#444;">Задание по книге</h3>
         <input type="text" id="book-title" placeholder="Название рассказа / главы">
-        <textarea id="book-text" rows="4" placeholder="Вставьте сюда текст для чтения ребенком..."></textarea>
         
         <label style="font-weight: 500; font-size: 15px; display:block; margin-bottom:8px;">Создание вопросов:</label>
         <select id="generation-mode">
@@ -87,7 +86,7 @@
             <input type="text" id="opt-b" placeholder="Вариант Б (Неправильный)">
         </div>
         
-        <button id="save-content-btn" style="background-color: #2b7de9; margin-top: 10px;">💾 Сохранить настройки и текст</button>
+        <button id="save-content-btn" style="background-color: #2b7de9; margin-top: 10px;">💾 Настроить параметры задания</button>
         <button id="parent-close-btn" style="background-color: #757575;">Закрыть кабинет</button>
     </div>
 </div>
@@ -112,7 +111,6 @@
             }
         }
 
-        // Переключение полей ввода вопросов
         document.getElementById('generation-mode').addEventListener('change', (e) => {
             const box = document.getElementById('manual-questions-box');
             if (e.target.value === 'manual') {
@@ -127,17 +125,15 @@
             tg.close();
         });
 
-        // Безопасный клик по кнопке сохранения
         document.getElementById('save-content-btn').addEventListener('click', () => {
             try {
                 const norm = document.getElementById('daily-norm').value;
                 const reward = document.getElementById('reward-amount').value;
                 const title = document.getElementById('book-title').value;
-                const text = document.getElementById('book-text').value;
                 const mode = document.getElementById('generation-mode').value;
 
-                if (!title || !text || !norm || !reward) {
-                    alert("Заполните все базовые поля!");
+                if (!title || !norm || !reward) {
+                    alert("Заполните базовые поля!");
                     return;
                 }
 
@@ -155,19 +151,18 @@
                     }
                 }
 
-                // Очищаем строки от символа |, чтобы бэкенд не сошел с ума при делении split('|')
                 const safeTitle = title.replace(/\|/g, " ");
-                const safeText = text.replace(/\|/g, " ");
                 const safeQuestion = question.replace(/\|/g, " ");
                 const safeOptA = optA.replace(/\|/g, " ");
                 const safeOptB = optB.replace(/\|/g, " ");
 
-                const payload = `config_box|${norm}|${reward}|${safeTitle}|${safeText}|${mode}|${safeQuestion}|${safeOptA}|${safeOptB}`;
+                // Теперь передаем только метаданные без огромного текста книги!
+                const payload = `config_meta|${norm}|${reward}|${safeTitle}|${mode}|${safeQuestion}|${safeOptA}|${safeOptB}`;
                 
                 tg.sendData(payload);
                 tg.close();
             } catch (err) {
-                alert("Ошибка внутри обработчика кнопки: " + err.message);
+                alert("Ошибка: " + err.message);
             }
         });
 
@@ -176,7 +171,7 @@
         });
 
     } catch (globalErr) {
-        alert("Глобальная ошибка инициализации: " + globalErr.message);
+        alert("Ошибка инициализации: " + globalErr.message);
     }
 </script>
 </body>
