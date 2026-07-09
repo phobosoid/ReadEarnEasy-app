@@ -6,7 +6,7 @@
     <title>Читай и Зарабатывай</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f4f6f9; padding: 16px; margin: 0; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: #f4f6f9; padding: 16px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 500px; background: white; padding: 24px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); box-sizing: border-box; }
         h1 { color: #2b7de9; font-size: 22px; text-align: center; margin-top: 0; }
         button { background-color: #34a853; color: white; border: none; padding: 16px; font-size: 18px; font-weight: bold; border-radius: 12px; cursor: pointer; width: 100%; box-shadow: 0 4px 10px rgba(52,168,83,0.2); margin-bottom: 10px; }
@@ -16,46 +16,46 @@
         input[type="text"], input[type="number"], select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
         .toggle-box { display: none; }
         .toggle-box.visible { display: block; }
-        
-        /* СТИЛИ ЧИТАЛЬНОГО ЗАЛА ДЛЯ РЕБЕНКА */
-        .reader-container { background-color: #fff8ed; border: 1px solid #f0e2cc; border-radius: 16px; padding: 20px; max-height: 65vh; overflow-y: auto; box-sizing: border-box; margin-bottom: 20px; text-align: left; }
-        .reader-text { font-size: 19px; line-height: 1.65; color: #2c251e; letter-spacing: 0.3px; font-weight: 400; white-space: pre-wrap; }
-        .reader-text p { margin-bottom: 16px; text-indent: 20px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="child-start-screen" class="screen" style="text-align: center;">
-        <h1 id="child-welcome-title">📖 Новое задание!</h1>
-        <p style="font-size:16px; color:#666; margin-bottom:24px;">Тебя ждет интересная история. Нажми кнопку ниже, чтобы открыть встроенную читалку с удобным шрифтом.</p>
-        <button id="open-reader-btn" style="background-color: #2b7de9;">📖 Открыть читальный зал</button>
-    </div>
-
-    <div id="child-read-screen" class="screen">
-        <h1 id="reader-book-title" style="color: #2c251e; font-size: 20px;">Название рассказа</h1>
-        <div class="reader-container">
-            <div id="reader-text-content" class="reader-text"></div>
-        </div>
-        <button id="child-test-btn">🚀 Я прочитал, запустить тест!</button>
+    <div id="child-screen" class="screen" style="text-align: center;">
+        <h1>🏁 Прочитал книгу?</h1>
+        <p style="font-size:16px; color:#666; margin-bottom:24px;">Нажимай кнопку ниже, чтобы начать викторину и получить награду!</p>
+        <button id="child-test-btn">🚀 Запустить викторину!</button>
     </div>
 
     <div id="parent-screen" class="screen">
         <h1>👨‍👩‍👦 Кабинет Родителя</h1>
-        <p style="text-align:center; color:#666; margin-bottom: 20px;">Назначение индивидуальных заданий</p>
+        <p style="text-align:center; color:#666; margin-bottom: 20px;">Назначение заданий</p>
         
         <label style="font-weight: 500;">🎯 Выберите ребенка:</label>
         <select id="child-select" onchange="updateBookLabels()"></select>
 
         <div class="setting-row"><label>Норма (страниц в день):</label><input type="number" id="daily-norm" value="2" style="width:70px;"></div>
-        <div class="setting-row"><label>Награда за весь рассказ (коинов):</label><input type="number" id="reward-amount" value="20" style="width:70px;"></div>
+        <div class="setting-row"><label>Награда (коинов):</label><input type="number" id="reward-amount" value="20" style="width:70px;"></div>
         
-        <label style="font-weight: 500;">📚 Выберите рассказ из библиотеки:</label>
-        <select id="library-select">
-            <option value="filipok">Л. Толстой — «Филипок»</option>
-            <option value="zhivaya_shlyapa">Н. Носов — «Живая шляпа»</option>
-            <option value="volshebnoe_slovo">В. Осеева — «Волшебное слово»</option>
+        <label style="font-weight: 500;">📋 Источник текста рассказов:</label>
+        <select id="source-mode" onchange="toggleSourceBoxes()">
+            <option value="library">📚 Выбрать готовый рассказ из библиотеки</option>
+            <option value="manual">✍️ Ввести свой рассказ вручную через чат</option>
         </select>
+
+        <div id="library-box" class="toggle-box visible">
+            <label style="font-weight: 500;">Библиотека:</label>
+            <select id="library-select">
+                <option value="filipok">Л. Толстой — «Филипок»</option>
+                <option value="zhivaya_shlyapa">Н. Носов — «Живая шляпа»</option>
+                <option value="volshebnoe_slovo">В. Осеева — «Волшебное слово»</option>
+            </select>
+        </div>
+
+        <div id="manual-box" class="toggle-box">
+            <label style="font-weight: 500;">Название вашего рассказа:</label>
+            <input type="text" id="manual-title" placeholder="Например: Сказка о рыбаке и рыбке">
+        </div>
         
         <button id="save-content-btn" style="background-color: #2b7de9; margin-top: 20px;">💾 Назначить рассказ ребенку</button>
         <button id="parent-close-btn" style="background-color: #757575;">Закрыть</button>
@@ -64,31 +64,17 @@
 
 <script>
     let globalHistory = {}; 
-    
-    // БАЗА ДАННЫХ ПОЛНЫХ ТЕКСТОВ ВНУТРИ MINI APP
-    const libraryDatabase = {
-        "filipok": "Был мальчик Филипп. Все ребята ушли в школу. Филипп взял шапку и хотел тоже идти. Но мать сказала ему: куда ты, Филипок, собрался? Ты еще мал, не ходи, — и оставила его дома.\n\nРебята ушли в школу. Отец еще с утра уехал в лес, мать ушла на поденную работу. Остался Филипок в избе с бабушкой на печке. Филипку стало скучно одному, бабушка заснула, а он взял шапку и пошел в школу.\n\nШкола была за селом у церкви. Когда Филипп шел по своей слободе, собаки не трогали его, они его знали. Но когда он вышел к чужим дворам, выскочил Жучка, залаял, а за Жучкой большая собака Волчок. Филипок бросился бежать, собаки за ним. Филипок стал кричать, спотыкнулся и упал.\n\nВышел мужик, отогнал собак и сказал: куда ты, пострел, один бежишь? Филипок ничего не сказал, подобрал полы и пустился бежать во весь дух к школе. Прибежал он к школе, на крыльце никого нет, а в школе слышны голоса ребят. На Филипка нашел страх: что, как учитель меня прогонит? И стал он думать, что ему делать. Назад идти — опять собаки схватят, в школу идти — учителя боится.\n\nШла мимо школы баба с ведром и говорит: все учатся, а ты что тут стоишь? Филипок и пошел в школу. В сенях он снял шапку и отворил дверь. Ребята все кричали стихи, и учитель в красном шарфе ходил посреди комнаты.\n\n— Ты кто? — закричал он на Филиппка. Филиппок ухватился за шапку и ничего не говорил. — Да ты кто? — Филиппок молчал. — Или ты немой? — Филиппок так напугался, что говорить не мог. — Ну так ступай домой, коли говорить не хочешь.\n\nА Филиппок и рад бы что сказать, да в горле от страха пересохло. Он посмотрел на учителя и заплакал. Тогда учителю стало жалко его. Он погладил его по голове и спросил у ребят, чья это форма?\n\n— Это Костюшкин брат, — закричали ребята, — он давно просится в школу, да мать не пускает, он тайком пришел.\n\n— Ну, садись на лавку, — сказал учитель, — а я твоей матери скажу, чтоб пускала тебя. Учитель стал показывать Филипку буквы, а Филипок их уже знал и читать умел немного. — Ну-ка, зачти, — сказал учитель. Филипок начал складывать буквы, и у него вышло очень хорошо. Учитель сказал: молодец! С тех пор Филипок стал ходить с ребятами в школу.",
-        
-        "zhivaya_shlyapa": "Шляпа лежала на комоде, котенок Васька сидел на полу возле комода, а Вовка и Вадик сидели за столом и раскрашивали картинки. Вдруг позади них что-то плюхнулось — упало на пол. Они повернулись и увидели на полу шляпу.\n\nВовка подошел к комоду, нагнулся, хотел поднять шляпу — и вдруг как закричит:\n— Ай-ай-ай! — и в сторону. \n— Ты чего? — спрашивает Вадик.\n— Она... она живая!\n— Кто живая?\n— Шля-па!\n— Что ты! Разве шляпы бывают живыми?\n— Посмотри сам!\n\nВадик подошел ближе и стал смотреть на шляпу. Вдруг шляпа поползла прямо к нему. Он как закричит:\n— Ай! — и прыг на диван. Вовка за ним.\nШляпа выехала на середину комнаты и остановилась. Мальчики смотрят на нее и трясутся от страха. Тут шляпа повернулась и поползла к дивану.\n\n— Ай! Ой! — закричали мальчики. Соскочили с дивана — и бегом на кухню. Дверь за собой закрыли.\n— Я у-у-хожу! — говорит Вовка. — Я бо-боюсь!\n— Куда же ты? \n— Пойду к себе домой. Шляпа у вас какая-то странная.\n— Давай возьмем кочергу, — предложил Вадик. — Если она к нам полезет, мы ее кочергой треснем.\n\nОни взяли кочергу и лыжную палку, приоткрыли дверь и заглянули в комнату. Шляпа лежала возле стола.\n— Сейчас я ее напугаю, — сказал Вадик. Он взял палку и начал стучать по полу: — Эй ты, шляпа!\nНо шляпа даже не двигалась. Тогда мальчики набрали картошки из корзины и стали швырять в нее. Швыряли, швыряли, и вдруг Вадик попал! Шляпа как подпрыгнет!\n\n— Мяу! — закричало что-то под шляпой. Глядь, а из-под нее высунулся серый хвост, потом лапа, а потом и сам котенок выскочил!\n— Васька! — обрадовались мальчики. — Оказывается, он спал на полу, а шляпа на него упала, он испугался и стал бегать под ней! Мальчики обняли Ваську и больше его не пугали.",
-        
-        "volshebnoe_slovo": "Маленький старик с длинной седой бородой сидел на скамейке и зонтиком чертил что-то на песке. Павлик подсел к нему и сердито буркнул:\n— Подвиньтесь.\nСтарик посмотрел на его красное лицо и спросил:\n— Что с тобой случилось, сынок?\n— На сестру Ленку обиделся! Не дает мне красок! И брат на лодке не берет. Все меня прогоняют!\n\nСтарик погладил бороду и сказал:\n— Я могу тебе помочь. Есть такое волшебное слово. Но говорить его нужно очень тихо, глядя прямо в глаза тому, с кем говоришь. Помни — тихо!\n— А какое это слово? — шепнул Павлик.\nСтарик наклонился к его уху и очень тихо сказал:\n— Это слово — «пожалуйста». Только не забывай, как его нужно говорить.\n\nПавлик вскочил со скамейки и побежал домой. Дома Лена сидела за столом и рисовала. Павлик подошел сзади, тихонько потянул её за рукав, посмотрел прямо в глаза и шепнул:\n— Лена, дай мне, пожалуйста, одну краску...\nЛена удивленно широко открыла глаза, улыбнулась и сказала:\n— Выбирай любую, Павлик!\n\n«Ого! Работает!» — подумал мальчик и пошел на кухню к бабушке, которая пекла пирожки. Павлик подошел, обнял её, заглянул в лицо и тихо попросил:\n— Бабушка, дай мне, пожалуйста, кусочек пирожка.\nБабушка даже прослезилась от радости, поцеловала Павлика и выбрала самый лучший, горячий пирожок.\n\nЗа обедом старший брат собирался ехать кататься на лодке. Павлик замер, посмотрел брату прямо в глаза и очень тихо, вежливо произнес:\n— Возьми меня, пожалуйста, с собой.\nЗа столом сразу стало тихо. Брат улыбнулся и ответил:\n— Ну хорошо, собирайся, путешественник!\nПавлик выбежал на улицу, чтобы поблагодарить старика, но скамейка была уже пуста. Зато волшебное слово осталось с ним навсегда."
-    };
-
     try {
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-
+        const tg = window.Telegram.WebApp; tg.expand();
         const urlParams = new URLSearchParams(window.location.search);
         const userRole = urlParams.get('role');
         const childrenParam = urlParams.get('children');
         const historyParam = urlParams.get('history');
-        const currentBookKey = urlParams.get('book'); // Бот присылает ключ назначенной книги
 
         if (userRole === 'parent') {
             document.getElementById('parent-screen').classList.add('active');
             const childSelect = document.getElementById('child-select');
-            const libSelect = document.getElementById('library-select');
-
+            
             if (historyParam && historyParam !== 'none') {
                 decodeURIComponent(historyParam).split(',').forEach(item => {
                     const p = item.split(':');
@@ -96,7 +82,6 @@
                     globalHistory[p[0]].push(p[1]);
                 });
             }
-
             if (childrenParam && childrenParam !== 'none') {
                 decodeURIComponent(childrenParam).split(',').forEach(c => {
                     const parts = c.split(':');
@@ -105,34 +90,19 @@
                     childSelect.appendChild(opt);
                 });
                 updateBookLabels();
-            } else {
-                const opt = document.createElement('option');
-                opt.value = "0"; opt.innerText = "⚠️ Сначала подключите детей!";
-                childSelect.appendChild(opt);
             }
         } else {
-            // Режим ребенка
-            document.getElementById('child-start-screen').classList.add('active');
-            
-            // Если открыта конкретная книга
-            if (currentBookKey && libraryDatabase[currentBookKey]) {
-                const titleMap = { "filipok": "Л. Толстой — «Филипок»", "zhivaya_shlyapa": "Н. Носов — «Живая шляпа»", "volshebnoe_slovo": "В. Осеева — «Волшебное слово»" };
-                document.getElementById('child-welcome-title').innerText = titleMap[currentBookKey] || "Новая книга";
-                
-                // Настраиваем логику открытия читального зала
-                document.getElementById('open-reader-btn').addEventListener('click', () => {
-                    document.getElementById('child-start-screen').classList.remove('active');
-                    document.getElementById('child-read-screen').classList.add('active');
-                    document.getElementById('reader-book-title').innerText = titleMap[currentBookKey];
-                    
-                    // Форматируем текст параграфами
-                    const rawText = libraryDatabase[currentBookKey];
-                    const paragraphs = rawText.split('\n\n').map(p => `<p>${p}</p>`).join('');
-                    document.getElementById('reader-text-content').innerHTML = paragraphs;
-                });
+            document.getElementById('child-screen').classList.add('active');
+        }
+
+        window.toggleSourceBoxes = function() {
+            const val = document.getElementById('source-mode').value;
+            if(val === 'library') {
+                document.getElementById('library-box').classList.add('visible');
+                document.getElementById('manual-box').classList.remove('visible');
             } else {
-                document.getElementById('reader-text-content').innerText = "Для тебя пока нет активных заданий в библиотеке.";
-                document.getElementById('open-reader-btn').disabled = true;
+                document.getElementById('library-box').classList.remove('visible');
+                document.getElementById('manual-box').classList.add('visible');
             }
         }
 
@@ -140,14 +110,10 @@
             const currentChild = document.getElementById('child-select').value;
             const libSelect = document.getElementById('library-select');
             const readBooks = globalHistory[currentChild] || [];
-
             for (let option of libSelect.options) {
                 let cleanText = option.innerText.replace(" ✅ [ПРОЧИТАНО]", "");
-                if (readBooks.includes(option.value)) {
-                    option.innerText = cleanText + " ✅ [ПРОЧИТАНО]";
-                } else {
-                    option.innerText = cleanText;
-                }
+                if (readBooks.includes(option.value)) option.innerText = cleanText + " ✅ [ПРОЧИТАНО]";
+                else option.innerText = cleanText;
             }
         }
         window.updateBookLabels = updateBookLabels;
@@ -158,25 +124,24 @@
 
         document.getElementById('save-content-btn').addEventListener('click', () => {
             const childId = document.getElementById('child-select').value;
-            if (childId === "0") { alert("У вас нет подключенных детей!"); return; }
-
             const norm = document.getElementById('daily-norm').value;
             const reward = document.getElementById('reward-amount').value;
-            const libSelect = document.getElementById('library-select');
-            
-            const bookKey = libSelect.value;
-            const bookTitle = libSelect.options[libSelect.selectedIndex].text.replace(" ✅ [ПРОЧИТАНО]", "");
-            
-            // Вшиваем полный текст локально из JS для ИИ-генератора на бэкенде
-            const fullText = libraryDatabase[bookKey];
+            const mode = document.getElementById('source-mode').value;
 
-            const payload = `library_meta|${norm}|${reward}|${bookKey}|${bookTitle}|${childId}|${fullText.substring(0, 300)}`;
-            tg.sendData(payload);
+            if(mode === 'library') {
+                const libSelect = document.getElementById('library-select');
+                const bookKey = libSelect.value;
+                const bookTitle = libSelect.options[libSelect.selectedIndex].text.replace(" ✅ [ПРОЧИТАНО]", "");
+                tg.sendData(`library_meta|${norm}|${reward}|${bookKey}|${bookTitle}|${childId}`);
+            } else {
+                const title = document.getElementById('manual-title').value;
+                if(!title) { alert("Укажите название рассказа!"); return; }
+                tg.sendData(`manual_init|${norm}|${reward}|${title}|${childId}`);
+            }
             tg.close();
         });
-
         document.getElementById('parent-close-btn').addEventListener('click', () => tg.close());
-    } catch (err) { alert("Ошибка: " + err.message); }
+    } catch (err) { alert(err.message); }
 </script>
 </body>
 </html>
