@@ -6,76 +6,50 @@
     <title>Читай и Зарабатывай</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f6f9; color: #333; margin: 0; padding: 16px; display: flex; flex-direction: column; align-items: center;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: #f4f6f9; padding: 16px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 500px; background: white; padding: 24px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); box-sizing: border-box; }
         h1 { color: #2b7de9; font-size: 22px; text-align: center; margin-top: 0; }
-        button {
-            background-color: #34a853; color: white; border: none; padding: 16px; font-size: 18px; font-weight: bold; border-radius: 12px; cursor: pointer; width: 100%;
-            box-shadow: 0 4px 10px rgba(52,168,83,0.2); margin-bottom: 10px;
-        }
+        button { background-color: #34a853; color: white; border: none; padding: 16px; font-size: 18px; font-weight: bold; border-radius: 12px; cursor: pointer; width: 100%; box-shadow: 0 4px 10px rgba(52,168,83,0.2); margin-bottom: 10px; }
         .screen { display: none; }
         .active { display: block; }
         .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #f8f9fa; padding: 12px; border-radius: 10px; }
-        .setting-row label { font-weight: 500; font-size: 15px; }
-        .setting-row input { width: 70px; padding: 8px; text-align: center; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; }
-        input[type="text"], select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
-        .toggle-box { display: none; }
-        .toggle-box.visible { display: block; }
+        input[type="text"], input[type="number"], select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- ЭКРАН РЕБЕНКА -->
     <div id="child-screen" class="screen" style="text-align: center;">
         <h1>🏁 Готов к тесту?</h1>
-        <p style="font-size:16px; color:#666; margin-bottom:24px;">Если ты внимательно прочитал свой рассказ, нажимай кнопку ниже!</p>
-        <button id="test-btn">🚀 Запустить викторину!</button>
+        <p style="font-size:16px; color:#666; margin-bottom:24px;">Если ты внимательно прочитал свой рассказ из файла, нажимай кнопку ниже!</p>
+        <button id="child-test-btn">🚀 Запустить викторину!</button>
     </div>
 
-    <!-- ЭКРАН РОДИТЕЛЯ -->
     <div id="parent-screen" class="screen">
         <h1>👨‍👩‍👦 Кабинет Родителя</h1>
-        <p style="text-align:center; color:#666; margin-bottom: 20px;">Назначение раздельных заданий</p>
-        
-        <label style="font-weight: 500; font-size: 15px; display:block; margin-bottom:8px;">🎯 Кому даем задание:</label>
-        <select id="child-select">
-            <!-- Сюда ИИ динамически добавит детей -->
+        <p style="text-align:center; color:#666; margin-bottom: 20px;">Назначение индивидуальных заданий</p>
+
+        <label style="font-weight: 500;">🎯 Выберите ребенка:</label>
+        <select id="child-select" onchange="updateBookLabels()"></select>
+
+        <div class="setting-row"><label>Норма (страниц в день):</label><input type="number" id="daily-norm" value="2" style="width:70px;"></div>
+        <div class="setting-row"><label>Награда за весь рассказ (коинов):</label><input type="number" id="reward-amount" value="20" style="width:70px;"></div>
+
+        <label style="font-weight: 500;">📚 Выберите рассказ из библиотеки:</label>
+        <select id="library-select">
+            <option value="filipok">Л. Толстой — «Филипок»</option>
+            <option value="zhivaya_shlyapa">Н. Носов — «Живая шляпа»</option>
+            <option value="volshebnoe_slovo">В. Осеева — «Волшебное слово»</option>
         </select>
 
-        <div class="setting-row">
-            <label>Норма (страниц):</label>
-            <input type="number" id="daily-norm" value="3" min="1">
-        </div>
-        <div class="setting-row">
-            <label>Персональная награда (коинов):</label>
-            <input type="number" id="reward-amount" value="15" min="1">
-        </div>
-        
-        <h3 style="margin-top:20px; color:#444;">Параметры книги</h3>
-        <input type="text" id="book-title" placeholder="Название рассказа">
-        
-        <label style="font-weight: 500; font-size: 15px; display:block; margin-bottom:8px;">Создание вопросов:</label>
-        <select id="generation-mode">
-            <option value="ai">🤖 Авто-генерация ИИ (Имена и города)</option>
-            <option value="manual">✍️ Ввести один вопрос вручную</option>
-        </select>
-        
-        <div id="manual-questions-box" class="toggle-box">
-            <input type="text" id="quiz-question" placeholder="Вопрос теста">
-            <input type="text" id="opt-a" placeholder="Вариант А (Правильный)">
-            <input type="text" id="opt-b" placeholder="Вариант Б (Неправильный)">
-        </div>
-        
-        <button id="save-content-btn" style="background-color: #2b7de9; margin-top: 10px;">💾 Отправить параметры в бот</button>
+        <button id="save-content-btn" style="background-color: #2b7de9; margin-top: 20px;">💾 Назначить рассказ ребенку</button>
         <button id="parent-close-btn" style="background-color: #757575;">Закрыть</button>
     </div>
 </div>
 
 <script>
+    let globalHistory = {};
+
     try {
         const tg = window.Telegram.WebApp;
         tg.expand();
@@ -83,61 +57,69 @@
         const urlParams = new URLSearchParams(window.location.search);
         const userRole = urlParams.get('role');
         const childrenParam = urlParams.get('children');
+        const historyParam = urlParams.get('history');
 
         if (userRole === 'parent') {
             document.getElementById('parent-screen').classList.add('active');
-            const select = document.getElementById('child-select');
-            
+            const childSelect = document.getElementById('child-select');
+
+            if (historyParam && historyParam !== 'none') {
+                decodeURIComponent(historyParam).split(',').forEach(item => {
+                    const p = item.split(':');
+                    const cId = p[0]; const bKey = p[1];
+                    if (!globalHistory[cId]) globalHistory[cId] = [];
+                    globalHistory[cId].push(bKey);
+                });
+            }
+
             if (childrenParam && childrenParam !== 'none') {
-                const list = decodeURIComponent(childrenParam).split(',');
-                list.forEach(c => {
+                decodeURIComponent(childrenParam).split(',').forEach(c => {
                     const parts = c.split(':');
                     const opt = document.createElement('option');
-                    opt.value = parts[0];
-                    opt.innerText = parts[1];
-                    select.appendChild(opt);
+                    opt.value = parts[0]; opt.innerText = parts[1];
+                    childSelect.appendChild(opt);
                 });
+                updateBookLabels();
             } else {
                 const opt = document.createElement('option');
-                opt.value = "0";
-                opt.innerText = "⚠️ Сначала подключите детей кнопкой в боте!";
-                select.appendChild(opt);
+                opt.value = "0"; opt.innerText = "⚠️ Сначала подключите детей!";
+                childSelect.appendChild(opt);
             }
         } else {
             document.getElementById('child-screen').classList.add('active');
         }
 
-        document.getElementById('generation-mode').addEventListener('change', (e) => {
-            const box = document.getElementById('manual-questions-box');
-            if (e.target.value === 'manual') box.classList.add('visible');
-            else box.classList.remove('visible');
-        });
+        function updateBookLabels() {
+            const currentChild = document.getElementById('child-select').value;
+            const bookSelect = document.getElementById('library-select');
+            const readBooks = globalHistory[currentChild] || [];
 
-        document.getElementById('test-btn').addEventListener('click', () => {
-            tg.sendData("start_test_clicked");
-            tg.close();
+            for (let option of bookSelect.options) {
+                let cleanText = option.innerText.replace(" ✅ [ПРОЧИТАНО]", "");
+                if (readBooks.includes(option.value)) {
+                    option.innerText = cleanText + " ✅ [ПРОЧИТАНО]";
+                } else {
+                    option.innerText = cleanText;
+                }
+            }
+        }
+
+        window.updateBookLabels = updateBookLabels;
+
+        document.getElementById('child-test-btn').addEventListener('click', () => {
+            tg.sendData("start_test_clicked"); tg.close();
         });
 
         document.getElementById('save-content-btn').addEventListener('click', () => {
             const childId = document.getElementById('child-select').value;
-            if (childId === "0") { alert("Нет подключенных детей!"); return; }
+            if (childId === "0") { alert("У вас нет подключенных детей!"); return; }
 
             const norm = document.getElementById('daily-norm').value;
             const reward = document.getElementById('reward-amount').value;
-            const title = document.getElementById('book-title').value;
-            const mode = document.getElementById('generation-mode').value;
+            const bookKey = document.getElementById('library-select').value;
+            const bookTitle = document.getElementById('library-select').options[document.getElementById('library-select').selectedIndex].text.replace(" ✅ [ПРОЧИТАНО]", "");
 
-            if (!title || !norm || !reward) { alert("Заполните базовые поля!"); return; }
-
-            let question = "auto_ai", optA = "auto_ai", optB = "auto_ai";
-            if (mode === 'manual') {
-                question = document.getElementById('quiz-question').value;
-                optA = document.getElementById('opt-a').value;
-                optB = document.getElementById('opt-b').value;
-                if (!question || !optA || !optB) { alert("Заполните поля вопроса!"); return; }
-            }
-
-            const payload = `config_meta|${norm}|${reward}|${title.replace(/\|/g, " ")}|${mode}|${question.replace(/\|/g, " ")}|${optA.replace(/\|/g, " ")}|${optB.replace(/\|/g, " ")}|${childId}`;
+            const payload = `library_meta|${norm}|${reward}|${bookKey}|${bookTitle}|${childId}`;
             tg.sendData(payload);
             tg.close();
         });
