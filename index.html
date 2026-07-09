@@ -21,17 +21,9 @@
 <body>
 
 <div class="container">
-    <!-- ЭКРАН РЕБЕНКА -->
-    <div id="child-screen" class="screen" style="text-align: center;">
-        <h1>🏁 Прочитал рассказ?</h1>
-        <p style="font-size:16px; color:#666; margin-bottom:24px;">Нажимай на кнопку ниже, чтобы запустить викторину!</p>
-        <button id="child-test-btn">🚀 Запустить викторину!</button>
-    </div>
-
-    <!-- ЭКРАН РОДИТЕЛЯ -->
     <div id="parent-screen" class="screen">
         <h1>👨‍👩‍👦 Кабинет Родителя</h1>
-        <p style="text-align:center; color:#666; margin-bottom: 20px;">Назначение раздельных заданий</p>
+        <p style="text-align:center; color:#666; margin-bottom: 20px;">Назначение заданий</p>
         
         <label style="font-weight: 500;">🎯 Выберите ребенка:</label>
         <select id="child-select" onchange="updateBookLabels()"></select>
@@ -73,9 +65,7 @@
         const childrenParam = urlParams.get('children');
         const historyParam = urlParams.get('history');
 
-        if (userRole === 'child') {
-            document.getElementById('child-screen').classList.add('active');
-        } else if (userRole === 'parent') {
+        if (userRole === 'parent') {
             document.getElementById('parent-screen').classList.add('active');
             const childSelect = document.getElementById('child-select');
             
@@ -95,6 +85,9 @@
                 });
                 updateBookLabels();
             }
+        } else {
+            // Если роль child — просто закрываем Mini App, он больше не нужен ребенку!
+            tg.close();
         }
 
         window.toggleSourceBoxes = function() {
@@ -119,10 +112,6 @@
             }
         }
         window.updateBookLabels = updateBookLabels;
-
-        document.getElementById('child-test-btn').addEventListener('click', () => {
-            tg.sendData("start_test_clicked"); tg.close();
-        });
 
         document.getElementById('save-content-btn').addEventListener('click', () => {
             const childId = document.getElementById('child-select').value;
