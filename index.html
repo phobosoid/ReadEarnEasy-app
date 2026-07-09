@@ -6,7 +6,7 @@
     <title>Читай и Зарабатывай</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: #f4f6f9; padding: 16px; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: #f4f6f9; padding: 16px; margin:0; display: flex; flex-direction: column; align-items: center; box-sizing: border-box; }
         .container { width: 100%; max-width: 500px; background: white; padding: 24px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); box-sizing: border-box; }
         h1 { color: #2b7de9; font-size: 22px; text-align: center; margin-top: 0; }
         button { background-color: #34a853; color: white; border: none; padding: 16px; font-size: 18px; font-weight: bold; border-radius: 12px; cursor: pointer; width: 100%; box-shadow: 0 4px 10px rgba(52,168,83,0.2); margin-bottom: 10px; }
@@ -16,15 +16,22 @@
         input[type="text"], input[type="number"], select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
         .toggle-box { display: none; }
         .toggle-box.visible { display: block; }
+
+        /* ИДЕАЛЬНЫЙ ШРИФТ ДЛЯ КНИГИ */
+        .reader-container { background-color: #fff8ed; border: 1px solid #f0e2cc; border-radius: 16px; padding: 20px; max-height: 60vh; overflow-y: auto; box-sizing: border-box; margin-bottom: 20px; text-align: left; }
+        .reader-text { font-size: 19px; line-height: 1.65; color: #2c251e; letter-spacing: 0.3px; white-space: pre-wrap; }
+        .reader-text p { margin-bottom: 16px; text-indent: 20px; margin-top:0; text-align: justify; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="child-screen" class="screen" style="text-align: center;">
-        <h1>🏁 Прочитал книгу?</h1>
-        <p style="font-size:16px; color:#666; margin-bottom:24px;">Нажимай кнопку ниже, чтобы начать викторину и получить награду!</p>
-        <button id="child-test-btn">🚀 Запустить викторину!</button>
+    <div id="child-read-screen" class="screen">
+        <h1 id="reader-book-title" style="color: #2c251e; font-size: 20px; text-align:center;">Название книги</h1>
+        <div class="reader-container">
+            <div id="reader-text-content" class="reader-text"></div>
+        </div>
+        <button id="child-test-btn">🚀 Я прочитал, запустить тест!</button>
     </div>
 
     <div id="parent-screen" class="screen">
@@ -92,7 +99,27 @@
                 updateBookLabels();
             }
         } else {
-            document.getElementById('child-screen').classList.add('active');
+            // ЭКРАН РЕБЕНКА: ЧИТАЛЬНЫЙ ЗАЛ С КРАСИВЫМ ТЕКСТОМ ИЗ КНОПКИ
+            document.getElementById('child-read-screen').classList.add('active');
+            
+            const bTitle = urlParams.get('book_title') ? decodeURIComponent(urlParams.get('book_title')) : "Твоя книга";
+            const bTextRaw = urlParams.get('book_text') || "";
+            
+            document.getElementById('reader-book-title').innerText = bTitle;
+
+            if (bTextRaw && bTextRaw !== "none") {
+                // Декодируем Base64 обратно в нормальный текст UTF-8
+                const decodedText = decodeURIComponent(atob(bTextRaw).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+
+                // Превращаем переносы строк в красивые абзацы
+                const htmlParagraphs = decodedText.split('\n\n').map(p => p.strip ? p.strip() : p).filter(p => p).map(p => `<p>${p}</p>`).join('');
+                document.getElementById('reader-text-content').innerHTML = htmlParagraphs || `<p>${decodedText}</p>`;
+            } else {
+                document.getElementById('reader-text-content').innerHTML = "<p style='text-align:center; color:#999;'>У тебя пока нет активных книг. Попроси родителей назначить рассказ!</p>";
+                document.getElementById('child-test-btn').style.display = "none";
+            }
         }
 
         window.toggleSourceBoxes = function() {
