@@ -21,15 +21,17 @@
 <body>
 
 <div class="container">
+    <!-- ЭКРАН РЕБЕНКА -->
     <div id="child-screen" class="screen" style="text-align: center;">
-        <h1>🏁 Прочитал рассказ в чате?</h1>
-        <p style="font-size:16px; color:#666; margin-bottom:24px;">Нажимай на зеленую кнопку ниже, чтобы начать викторину и получить заслуженные коины!</p>
-        <button id="child-test-btn">🚀 Начать тест!</button>
+        <h1>🏁 Прочитал рассказ?</h1>
+        <p style="font-size:16px; color:#666; margin-bottom:24px;">Нажимай на кнопку ниже, чтобы запустить викторину!</p>
+        <button id="child-test-btn">🚀 Запустить викторину!</button>
     </div>
 
+    <!-- ЭКРАН РОДИТЕЛЯ -->
     <div id="parent-screen" class="screen">
         <h1>👨‍👩‍👦 Кабинет Родителя</h1>
-        <p style="text-align:center; color:#666; margin-bottom: 20px;">Назначение заданий</p>
+        <p style="text-align:center; color:#666; margin-bottom: 20px;">Назначение раздельных заданий</p>
         
         <label style="font-weight: 500;">🎯 Выберите ребенка:</label>
         <select id="child-select" onchange="updateBookLabels()"></select>
@@ -71,7 +73,6 @@
         const childrenParam = urlParams.get('children');
         const historyParam = urlParams.get('history');
 
-        // Жесткое и безошибочное разделение ролей!
         if (userRole === 'child') {
             document.getElementById('child-screen').classList.add('active');
         } else if (userRole === 'parent') {
