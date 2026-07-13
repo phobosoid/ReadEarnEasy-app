@@ -2,137 +2,356 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Читай и Зарабатывай</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ReadEarn Easy — Кабинет Родителя</title>
+    <!-- Подключаем официальный скрипт Telegram WebApp API -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: #f4f6f9; padding: 16px; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 100%; max-width: 500px; background: white; padding: 24px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); box-sizing: border-box; }
-        h1 { color: #2b7de9; font-size: 22px; text-align: center; margin-top: 0; }
-        button { background-color: #34a853; color: white; border: none; padding: 16px; font-size: 18px; font-weight: bold; border-radius: 12px; cursor: pointer; width: 100%; box-shadow: 0 4px 10px rgba(52,168,83,0.2); margin-bottom: 10px; }
-        .screen { display: none; }
-        .active { display: block; }
-        .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: #f8f9fa; padding: 12px; border-radius: 10px; }
-        input[type="text"], input[type="number"], select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
-        .toggle-box { display: none; }
-        .toggle-box.visible { display: block; }
+        :root {
+            --tg-theme-bg-color: #ffffff;
+            --tg-theme-text-color: #000000;
+            --tg-theme-button-color: #2481cc;
+            --tg-theme-button-text-color: #ffffff;
+            --tg-theme-hint-color: #999999;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tg-theme-bg-color, #f4f4f7);
+            color: var(--tg-theme-text-color, #232324);
+            margin: 0;
+            padding: 16px;
+            padding-bottom: 40px;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            margin: 0 0 6px 0;
+            color: var(--tg-theme-button-color, #2b7de9);
+        }
+
+        .header p {
+            font-size: 14px;
+            margin: 0;
+            color: var(--tg-theme-hint-color, #8e8e93);
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--tg-theme-text-color, #4a4a4c);
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 15px;
+            border: 1px solid #d1d1d6;
+            border-radius: 8px;
+            box-sizing: border-box;
+            background-color: #ffffff;
+            color: #000000;
+            transition: border-color 0.15s ease;
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--tg-theme-button-color, #2b7de9);
+        }
+
+        .radio-tiles {
+            display: grid;
+            grid-template-columns: 1xl 1xl;
+            gap: 10px;
+        }
+
+        .tile {
+            border: 2px solid #e5e5ea;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tile.active {
+            border-color: var(--tg-theme-button-color, #2b7de9);
+            background-color: rgba(43, 125, 233, 0.05);
+        }
+
+        .tile-icon {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+
+        .tile-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #8e8e93);
+            margin-top: 4px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background-color: var(--tg-theme-button-color, #2b7de9);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Оформление списка истории */
+        .history-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .history-item {
+            padding: 8px 0;
+            font-size: 14px;
+            border-bottom: 1px solid #f2f2f7;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="parent-screen" class="screen">
+    <div class="header">
         <h1>👨‍👩‍👦 Кабинет Родителя</h1>
-        <p style="text-align:center; color:#666; margin-bottom: 20px;">Назначение заданий</p>
-        
-        <label style="font-weight: 500;">🎯 Выберите ребенка:</label>
-        <select id="child-select" onchange="updateBookLabels()"></select>
+        <p>Управление планом чтения и выплатами</p>
+    </div>
 
-        <div class="setting-row"><label>Норма (страниц в день):</label><input type="number" id="daily-norm" value="2" style="width:70px;"></div>
-        <div class="setting-row"><label>Награда (коинов):</label><input type="number" id="reward-amount" value="20" style="width:70px;"></div>
-        
-        <label style="font-weight: 500;">📋 Источник текста рассказов:</label>
-        <select id="source-mode" onchange="toggleSourceBoxes()">
-            <option value="library">📚 Выбрать готовый рассказ из библиотеки</option>
-            <option value="manual">✍️ Ввести свой рассказ вручную через чат</option>
-        </select>
+    <!-- БЛОК 1: ВЫБОР РЕБЕНКА -->
+    <div class="card">
+        <div class="card-title">👶 Выберите ученика</div>
+        <div class="form-group">
+            <select id="childSelect">
+                <!-- Подгрузится автоматически из бота -->
+                <option value="">Загрузка учеников...</option>
+            </select>
+        </div>
+    </div>
 
-        <div id="library-box" class="toggle-box visible">
-            <label style="font-weight: 500;">Библиотека:</label>
-            <select id="library-select">
+    <!-- БЛОК 2: ИСТОЧНИК КНИГИ -->
+    <div class="card">
+        <div class="card-title">📖 Способ добавления книги</div>
+        <div class="radio-tiles">
+            <div class="tile active" id="tileLibrary" onclick="switchSource('library')">
+                <div class="tile-icon">📚</div>
+                <div class="tile-title">Из папки Library</div>
+            </div>
+            <div class="tile" id="tileManual" onclick="switchSource('manual')">
+                <div class="tile-icon">✍️</div>
+                <div class="tile-title">Ввести свой текст</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- БЛОК 3А: ВЫБОР ИЗ НАШЕЙ FB2/TXT МЕДИАТЕКИ -->
+    <div class="card" id="srcLibraryBlock">
+        <div class="card-title">📕 Выберите произведение</div>
+        <div class="form-group">
+            <label for="bookSelect">Доступные книги и рассказы:</label>
+            <select id="bookSelect">
+                <!-- Стандартные вшитые рассказы -->
                 <option value="filipok">Л. Толстой — «Филипок»</option>
                 <option value="zhivaya_shlyapa">Н. Носов — «Живая шляпа»</option>
                 <option value="volshebnoe_slovo">В. Осеева — «Волшебное слово»</option>
-                <option value="voskresenie">Л. Толстой — «Воскресение»</option>
+                <option value="voskresenie">Л. Толстой — «Воскресение» (Роман)</option>
+                
+                <!-- Твоя новая библиотека (.fb2) автоматически подвязанная через латинские ключи транслита -->
+                <option value="averchenko_kubarem_po_zagranitsam">А. Аверченко — «Кубарем по заграницам»</option>
+                <option value="adamov_izgnanie_vladyki">Г. Адамов — «Изгнание владыки»</option>
+                <option value="adamov_tayna_dvukh_okeanov">Г. Адамов — «Тайна двух океанов»</option>
+                <option value="andreev_dnevnik_satany">Л. Андреев — «Дневник Сатаны»</option>
+                <option value="andreev_krasnyy_smekh">Л. Андреев — «Красный смех»</option>
             </select>
+            <div class="hint">Бот автоматически подхватит файл .fb2 или .txt из папки проекта!</div>
         </div>
-
-        <div id="manual-box" class="toggle-box">
-            <label style="font-weight: 500;">Название вашего рассказа:</label>
-            <input type="text" id="manual-title" placeholder="Например: Сказка о рыбаке и рыбке">
-        </div>
-        
-        <button id="save-content-btn" style="background-color: #2b7de9; margin-top: 20px;">💾 Назначить рассказ ребенку</button>
-        <button id="parent-close-btn" style="background-color: #757575;">Закрыть</button>
     </div>
-</div>
 
-<script>
-    let globalHistory = {}; 
-    try {
-        const tg = window.Telegram.WebApp; tg.expand();
+    <!-- БЛОК 3Б: РУЧНОЙ ВВОД ТЕКСТА -->
+    <div class="card hidden" id="srcManualBlock">
+        <div class="card-title">📝 Ввод произвольного текста</div>
+        <div class="form-group">
+            <label for="manualTitle">Название произведения:</label>
+            <input type="text" id="manualTitle" placeholder="Например: Сказка про колобка">
+        </div>
+        <div class="form-group">
+            <label for="manualText">Вставьте текст рассказа целиком:</label>
+            <textarea id="manualText" rows="6" placeholder="Вставьте сюда любой текст скопированный из интернета..."></textarea>
+        </div>
+    </div>
+
+    <!-- БЛОК 4: НАСТРОЙКА НАГРАДЫ И НОРМЫ -->
+    <div class="card">
+        <div class="card-title">⚙️ Параметры нормы и выплаты</div>
+        <div class="form-group">
+            <label for="normPages">Дневная норма для ребёнка (в страницах):</label>
+            <select id="normPages">
+                <option value="1" selected>1 страница нормы (2 500 символов)</option>
+                <option value="2">2 страницы нормы (5 000 символов)</option>
+                <option value="3">3 страницы нормы (7 500 символов)</option>
+                <option value="5">5 страниц нормы (12 500 символов)</option>
+            </select>
+            <div class="hint">Каждая страница нормы — это ровно 2500 символов текста.</div>
+        </div>
+        <div class="form-group">
+            <label for="rewardAmount">Награда за выполнение нормы (Бук-коины):</label>
+            <input type="number" id="rewardAmount" value="20" min="1">
+            <div class="hint">Курс: 1 коин = 1 гривна при выплате в Monobank.</div>
+        </div>
+    </div>
+
+    <!-- БЛОК 5: ЖУРНАЛ УСПЕХОВ -->
+    <div class="card">
+        <div class="card-title">🎓 Прочитанные книги</div>
+        <ul class="history-list" id="historyList">
+            <li class="history-item" style="color:var(--tg-theme-hint-color);">Пока нет завершённых книг</li>
+        </ul>
+    </div>
+
+    <button class="btn-submit" onclick="submitPlan()">🍊 Утвердить план чтения</button>
+
+    <script>
+        // Инициализируем Telegram WebApp API
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Расширяем на весь экран смартфона
+
+        let currentSource = 'library';
+
+        // Парсим параметры адресной строки, переданные ботом
         const urlParams = new URLSearchParams(window.location.search);
-        const userRole = urlParams.get('role');
         const childrenParam = urlParams.get('children');
         const historyParam = urlParams.get('history');
 
-        if (userRole === 'parent') {
-            document.getElementById('parent-screen').classList.add('active');
-            const childSelect = document.getElementById('child-select');
-            
-            if (historyParam && historyParam !== 'none') {
-                decodeURIComponent(historyParam).split(',').forEach(item => {
-                    const p = item.split(':');
-                    if (!globalHistory[p[0]]) globalHistory[p[0]] = [];
-                    globalHistory[p[0]].push(p[1]);
-                });
-            }
-            if (childrenParam && childrenParam !== 'none') {
-                decodeURIComponent(childrenParam).split(',').forEach(c => {
-                    const parts = c.split(':');
-                    const opt = document.createElement('option');
-                    opt.value = parts[0]; opt.innerText = parts[1];
-                    childSelect.appendChild(opt);
-                });
-                updateBookLabels();
-            }
+        // Автоматически заполняем выпадающий список детей
+        const childSelect = document.getElementById('childSelect');
+        if (childrenParam && childrenParam !== 'none') {
+            childSelect.innerHTML = '';
+            const items = childrenParam.split(',');
+            items.forEach(item => {
+                const parts = item.split(':');
+                const option = document.createElement('option');
+                option.value = parts[0]; // Telegram ID ребенка
+                option.textContent = parts[1]; // Имя ребенка
+                childSelect.appendChild(option);
+            });
         } else {
-            tg.close();
+            childSelect.innerHTML = '<option value="">Сначала подключите ребенка в боте</option>';
         }
 
-        window.toggleSourceBoxes = function() {
-            const val = document.getElementById('source-mode').value;
-            if(val === 'library') {
-                document.getElementById('library-box').classList.add('visible');
-                document.getElementById('manual-box').classList.remove('visible');
+        // Автоматически заполняем список прочитанных книг
+        const historyList = document.getElementById('historyList');
+        if (historyParam && historyParam !== 'none') {
+            historyList.innerHTML = '';
+            const items = historyParam.split(',');
+            items.forEach(item => {
+                const parts = item.split(':');
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                li.innerHTML = `<span>📖 Ключ: <b>${parts[1]}</b></span> <span style="color:#4cd964;">✓ Успешно</span>`;
+                historyList.appendChild(li);
+            });
+        }
+
+        // Переключение вкладок источника книг
+        function switchSource(source) {
+            currentSource = source;
+            document.getElementById('tileLibrary').classList.toggle('active', source === 'library');
+            document.getElementById('tileManual').classList.toggle('active', source === 'manual');
+            
+            document.getElementById('srcLibraryBlock').classList.toggle('hidden', source !== 'library');
+            document.getElementById('srcManualBlock').classList.toggle('hidden', source !== 'manual');
+        }
+
+        // Отправка готовых мета-данных на бэкенд бота
+        function submitPlan() {
+            const childId = childSelect.value;
+            if (!childId) {
+                alert("Ошибка: Сначала выберите или подключите ребёнка!");
+                return;
+            }
+
+            const norm = document.getElementById('normPages').value;
+            const reward = document.getElementById('rewardAmount').value;
+
+            if (currentSource === 'library') {
+                const bookSelect = document.getElementById('bookSelect');
+                const bookKey = bookSelect.value;
+                const bookTitle = bookSelect.options[bookSelect.selectedIndex].text;
+
+                // Формируем строковый пакет метаданных для бэкенда
+                const dataString = `library_meta|${norm}|${reward}|${bookKey}|${bookTitle}|${childId}`;
+                tg.sendData(dataString); // Отправляем данные кнопкой в чат
+                tg.close(); // Закрываем Mini App
             } else {
-                document.getElementById('library-box').classList.remove('visible');
-                document.getElementById('manual-box').classList.add('visible');
+                const manualTitle = document.getElementById('manualTitle').value.trim();
+                const manualText = document.getElementById('manualText').value.trim();
+
+                if (!manualTitle || !manualText) {
+                    alert("Пожалуйста, заполните название и вставьте текст рассказа!");
+                    return;
+                }
+
+                const dataString = `manual_init|${norm}|${reward}|${manualTitle}|${childId}`;
+                tg.sendData(dataString);
+                tg.close();
             }
         }
-
-        function updateBookLabels() {
-            const currentChild = document.getElementById('child-select').value;
-            const libSelect = document.getElementById('library-select');
-            const readBooks = globalHistory[currentChild] || [];
-            for (let option of libSelect.options) {
-                let cleanText = option.innerText.replace(" ✅ [ПРОЧИТАНО]", "");
-                if (readBooks.includes(option.value)) option.innerText = cleanText + " ✅ [ПРОЧИТАНО]";
-                else option.innerText = cleanText;
-            }
-        }
-        window.updateBookLabels = updateBookLabels;
-
-        document.getElementById('save-content-btn').addEventListener('click', () => {
-            const childId = document.getElementById('child-select').value;
-            const norm = document.getElementById('daily-norm').value;
-            const reward = document.getElementById('reward-amount').value;
-            const mode = document.getElementById('source-mode').value;
-
-            if(mode === 'library') {
-                const libSelect = document.getElementById('library-select');
-                const bookKey = libSelect.value;
-                const bookTitle = libSelect.options[libSelect.selectedIndex].text.replace(" ✅ [ПРОЧИТАНО]", "");
-                tg.sendData(`library_meta|${norm}|${reward}|${bookKey}|${bookTitle}|${childId}`);
-            } else {
-                const title = document.getElementById('manual-title').value;
-                if(!title) { alert("Укажите название рассказа!"); return; }
-                tg.sendData(`manual_init|${norm}|${reward}|${title}|${childId}`);
-            }
-            tg.close();
-        });
-        document.getElementById('parent-close-btn').addEventListener('click', () => tg.close());
-    } catch (err) { alert(err.message); }
-</script>
+    </script>
 </body>
 </html>
