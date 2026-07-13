@@ -3,278 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ReadEarn Easy — Кабинет Родителя</title>
+    <title>Кабинет Родителя</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* Использование нативных токенов Telegram для идеального адаптивного дизайна */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f4f7;
-            color: #232324;
+            background-color: var(--tg-theme-secondary-bg-color, #f4f4f7);
+            color: var(--tg-theme-text-color, #000000);
             margin: 0;
             padding: 16px;
-            padding-bottom: 40px;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 24px;
+            padding-bottom: 30px;
         }
 
         .header h1 {
-            font-size: 22px;
-            margin: 0 0 6px 0;
-            color: #2b7de9;
+            font-size: 20px;
+            margin: 0 0 4px 0;
+            color: var(--tg-theme-button-color, #2481cc);
+            text-align: center;
         }
 
         .header p {
-            font-size: 14px;
-            margin: 0;
-            color: #8e8e93;
+            font-size: 13px;
+            margin: 0 0 20px 0;
+            color: var(--tg-theme-hint-color, #8e8e93);
+            text-align: center;
         }
 
         .card {
-            background: #ffffff;
+            background: var(--tg-theme-bg-color, #ffffff);
             border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            border: 1px solid #e5e5ea;
+            padding: 14px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
         .card-title {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
-            margin-top: 0;
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #2c2c2e;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 10px;
+            color: var(--tg-theme-hint-color, #8e8e93);
         }
 
-        .form-group {
-            margin-bottom: 14px;
+        /* Прогрессивный сегмент-контроллер вместо громоздких плиток */
+        .segment-control {
+            display: flex;
+            background: var(--tg-theme-secondary-bg-color, #efeff4);
+            padding: 2px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .segment-btn {
+            flex: 1;
+            padding: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--tg-theme-text-color, #000000);
+            cursor: pointer;
+        }
+
+        .segment-btn.active {
+            background: var(--tg-theme-bg-color, #ffffff);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-weight: 600;
         }
 
         label {
             display: block;
             font-size: 13px;
-            font-weight: 500;
             margin-bottom: 6px;
-            color: #4a4a4c;
+            color: var(--tg-theme-text-color, #000000);
         }
 
         select, input, textarea {
             width: 100%;
-            padding: 11px 12px;
+            padding: 10px 12px;
             font-size: 15px;
-            border: 1px solid #d1d1d6;
+            border: 1px solid rgba(0,0,0,0.1);
             border-radius: 8px;
             box-sizing: border-box;
-            background-color: #ffffff;
-            color: #000000;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 14px;
+            padding-right: 30px;
             appearance: none;
             -webkit-appearance: none;
         }
 
-        select {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 16px;
-            padding-right: 40px;
-        }
-
-        select:focus, input:focus, textarea:focus {
-            outline: none;
-            border-color: #2b7de9;
-        }
-
-        .radio-tiles {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .tile {
-            border: 1px solid #d1d1d6;
-            border-radius: 10px;
-            padding: 14px;
-            text-align: center;
-            cursor: pointer;
-            background: #ffffff;
-            color: #2c2c2e;
-            transition: all 0.2s ease;
-        }
-
-        .tile.active {
-            border-color: #2b7de9;
-            background-color: #f2f8ff;
-            color: #2b7de9;
-            box-shadow: inset 0 0 0 1px #2b7de9;
-        }
-
-        .tile-icon {
-            font-size: 24px;
-            margin-bottom: 6px;
-        }
-
-        .tile-title {
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .hint {
-            font-size: 12px;
-            color: #8e8e93;
-            margin-top: 6px;
-            line-height: 1.4;
-        }
-
         .btn-submit {
             width: 100%;
-            padding: 15px;
-            font-size: 16px;
+            padding: 14px;
+            font-size: 15px;
             font-weight: 600;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
+            background-color: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
             cursor: pointer;
-            background-color: #2b7de9;
-            color: #ffffff;
-            box-shadow: 0 2px 8px rgba(43, 125, 233, 0.3);
             margin-top: 10px;
         }
 
-        .hidden {
-            display: none;
-        }
-
-        .history-list {
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-
-        .history-item {
-            padding: 10px 0;
-            font-size: 14px;
-            border-bottom: 1px solid #f2f2f7;
-            display: flex;
-            justify-content: space-between;
-            color: #2c2c2e;
-        }
-
-        .history-item:last-child {
-            border-bottom: none;
-        }
+        .hidden { display: none; }
+        .history-item { font-size: 13px; padding: 6px 0; color: var(--tg-theme-text-color); }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>👨‍👩‍👦 Кабинет Родителя</h1>
-        <p>Управление планом чтения и выплатами</p>
+        <h1>Кабинет Родителя</h1>
+        <p>Настройка личного плана обучения</p>
     </div>
 
-    <!-- БЛОК 1: ВЫБОР РЕБЕНКА -->
     <div class="card">
-        <div class="card-title">👶 Выберите ученика</div>
-        <div class="form-group">
-            <select id="childSelect">
-                <option value="">Загрузка учеников...</option>
-            </select>
+        <div class="card-title">👶 Ученик</div>
+        <select id="childSelect"><option value="">Загрузка списка...</option></select>
+    </div>
+
+    <div class="card">
+        <div class="card-title">📖 Режим книги</div>
+        <div class="segment-control">
+            <button class="segment-btn active" id="btnLib" onclick="setSource('library')">Из папки Library</button>
+            <button class="segment-btn" id="btnManual" onclick="setSource('manual')">Свой текст</button>
         </div>
     </div>
 
-    <!-- БЛОК 2: ИСТОЧНИК КНИГИ -->
-    <div class="card">
-        <div class="card-title">📖 Способ добавления книги</div>
-        <div class="radio-tiles">
-            <div class="tile active" id="tileLibrary" onclick="switchSource('library')">
-                <div class="tile-icon">📚</div>
-                <div class="tile-title">Из папки Library</div>
-            </div>
-            <div class="tile" id="tileManual" onclick="switchSource('manual')">
-                <div class="tile-icon">✍️</div>
-                <div class="tile-title">Ввести свой текст</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- БЛОК 3А: ВЫБОР ИЗ МЕДИАТЕКИ -->
     <div class="card" id="srcLibraryBlock">
-        <div class="card-title">📕 Выберите произведение</div>
-        <div class="form-group">
-            <label for="bookSelect">Доступные книги и рассказы:</label>
-            <select id="bookSelect">
-                <!-- Базовые рассказы -->
-                <option value="filipok">Л. Толстой — «Филипок»</option>
-                <option value="zhivaya_shlyapa">Н. Носов — «Живая шляпа»</option>
-                <option value="volshebnoe_slovo">В. Осеева — «Волшебное слово»</option>
-                <option value="voskresenie">Л. Толстой — «Воскресение» (Роман)</option>
-                
-                <!-- Твоя новая библиотека (.fb2) -->
-                <option value="averchenko_kubarem_po_zagranitsam">А. Аверченко — «Кубарем по заграницам»</option>
-                <option value="adamov_izgnanie_vladyki">Г. Адамов — «Изгнание владыки»</option>
-                <option value="adamov_tayna_dvukh_okeanov">Г. Адамов — «Тайна двух океанов»</option>
-                <option value="andreev_dnevnik_satany">Л. Андреев — «Дневник Сатаны»</option>
-                <option value="andreev_krasnyy_smekh">Л. Андреев — «Красный смех»</option>
-            </select>
-            <div class="hint">Бот автоматически подхватит файл .fb2 или .txt из папки проекта!</div>
-        </div>
+        <div class="card-title">📕 Выбор книги</div>
+        <select id="bookSelect">
+            <option value="filipok">Л. Толстой — «Филипок»</option>
+            <option value="zhivaya_shlyapa">Н. Носов — «Живая шляпа»</option>
+            <option value="volshebnoe_slovo">В. Осеева — «Волшебное слово»</option>
+            <option value="voskresenie">Л. Толстой — «Воскресение»</option>
+            <option value="averchenko_kubarem_po_zagranitsam">А. Аверченко — «Кубарем по заграницам»</option>
+            <option value="adamov_izgnanie_vladyki">Г. Адамов — «Изгнание владыки»</option>
+            <option value="adamov_tayna_dvukh_okeanov">Г. Адамов — «Тайна двух океанов»</option>
+            <option value="andreev_dnevnik_satany">Л. Андреев — «Дневник Сатаны»</option>
+            <option value="andreev_krasnyy_smekh">Л. Андреев — «Красный смех»</option>
+        </select>
     </div>
 
-    <!-- БЛОК 3Б: РУЧНОЙ ВВОД ТЕКСТА -->
     <div class="card hidden" id="srcManualBlock">
-        <div class="card-title">📝 Ввод произвольного текста</div>
-        <div class="form-group">
-            <label for="manualTitle">Название произведения:</label>
-            <input type="text" id="manualTitle" placeholder="Например: Сказка про колобка">
-        </div>
-        <div class="form-group">
-            <label for="manualText">Вставьте текст рассказа целиком:</label>
-            <textarea id="manualText" rows="6" placeholder="Вставьте сюда любой текст..."></textarea>
-        </div>
+        <div class="card-title">📝 Новый рассказ</div>
+        <input type="text" id="manualTitle" placeholder="Название книги" style="margin-bottom:8px;">
+        <textarea id="manualText" rows="4" placeholder="Вставьте сюда текст произведения..."></textarea>
     </div>
 
-    <!-- БЛОК 4: НАСТРОЙКА НАГРАДЫ И НОРМЫ -->
     <div class="card">
-        <div class="card-title">⚙️ Параметры нормы и выплаты</div>
-        <div class="form-group">
-            <label for="normPages">Дневная норма для ребёнка (в страницах):</label>
+        <div class="card-title">⚙️ Настройки нормы</div>
+        <div style="margin-bottom:10px;">
+            <label>Дневная норма страниц:</label>
             <select id="normPages">
-                <option value="1" selected>1 страница нормы (2 500 символов)</option>
-                <option value="2">2 страницы нормы (5 000 символов)</option>
-                <option value="3">3 страницы нормы (7 500 символов)</option>
-                <option value="5">5 страниц нормы (12 500 символов)</option>
+                <script>
+                    for(let i=1; i<=30; i++) {
+                        document.write(`<option value="${i}">${i} ${i===1?'страница':i<5?'страницы':'страниц'}</option>`);
+                    }
+                </script>
             </select>
-            <div class="hint">Каждая страница нормы — это ровно 2500 символов текста.</div>
         </div>
-        <div class="form-group">
-            <label for="rewardAmount">Награда за выполнение нормы (Бук-коины):</label>
-            <input type="number" id="rewardAmount" value="20" min="1">
-            <div class="hint">Курс: 1 коин = 1 гривна при выплате в Monobank.</div>
+        <div>
+            <label>Награда за норму (Бук-коины / грн):</label>
+            <input type="number" id="rewardAmount" value="20">
         </div>
     </div>
 
-    <!-- БЛОК 5: ЖУРНАЛ УСПЕХОВ -->
     <div class="card">
-        <div class="card-title">🎓 Прочитанные книги</div>
-        <ul class="history-list" id="historyList">
-            <li class="history-item" style="color:#8e8e93;">Пока нет завершённых книг</li>
-        </ul>
+        <div class="card-title">🎓 Прочитано</div>
+        <div id="historyList" style="font-size:13px; opacity:0.6;">Список пуст</div>
     </div>
 
-    <button class="btn-submit" onclick="submitPlan()">🍊 Утвердить план чтения</button>
+    <button class="btn-submit" onclick="submitPlan()">Утвердить и отправить</button>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
         let currentSource = 'library';
-
         const urlParams = new URLSearchParams(window.location.search);
         const childrenParam = urlParams.get('children');
         const historyParam = urlParams.get('history');
@@ -282,71 +197,42 @@
         const childSelect = document.getElementById('childSelect');
         if (childrenParam && childrenParam !== 'none') {
             childSelect.innerHTML = '';
-            const items = childrenParam.split(',');
-            items.forEach(item => {
+            childrenParam.split(',').forEach(item => {
                 const parts = item.split(':');
-                const option = document.createElement('option');
-                option.value = parts[0];
-                option.textContent = parts[1];
-                childSelect.appendChild(option);
+                childSelect.innerHTML += `<option value="${parts[0]}">${parts[1]}</option>`;
             });
-        } else {
-            childSelect.innerHTML = '<option value="">Сначала подключите ребенка в боте</option>';
         }
 
         const historyList = document.getElementById('historyList');
         if (historyParam && historyParam !== 'none') {
             historyList.innerHTML = '';
-            const items = historyParam.split(',');
-            items.forEach(item => {
-                const parts = item.split(':');
-                const li = document.createElement('li');
-                li.className = 'history-item';
-                li.innerHTML = `<span>📖 Ключ: <b>${parts[1]}</b></span> <span style="color:#4cd964; font-weight:bold;">✓ Успешно</span>`;
-                historyList.appendChild(li);
+            historyParam.split(',').forEach(item => {
+                historyList.innerHTML += `<div class='history-item'>📖 Книга: <b>${item.split(':')[1]}</b> — <span style='color:#4cd964;'>Сдано</span></div>`;
             });
         }
 
-        function switchSource(source) {
-            currentSource = source;
-            document.getElementById('tileLibrary').classList.toggle('active', source === 'library');
-            document.getElementById('tileManual').classList.toggle('active', source === 'manual');
-            
-            document.getElementById('srcLibraryBlock').classList.toggle('hidden', source !== 'library');
-            document.getElementById('srcManualBlock').classList.toggle('hidden', source !== 'manual');
+        function setSource(src) {
+            currentSource = src;
+            document.getElementById('btnLib').classList.toggle('active', src === 'library');
+            document.getElementById('btnManual').classList.toggle('active', src === 'manual');
+            document.getElementById('srcLibraryBlock').classList.toggle('hidden', src !== 'library');
+            document.getElementById('srcManualBlock').classList.toggle('hidden', src !== 'manual');
         }
 
         function submitPlan() {
             const childId = childSelect.value;
-            if (!childId) {
-                alert("Ошибка: Сначала выберите или подключите ребёнка!");
-                return;
-            }
-
+            if (!childId) return alert("Выберите ученика!");
             const norm = document.getElementById('normPages').value;
             const reward = document.getElementById('rewardAmount').value;
 
             if (currentSource === 'library') {
-                const bookSelect = document.getElementById('bookSelect');
-                const bookKey = bookSelect.value;
-                const bookTitle = bookSelect.options[bookSelect.selectedIndex].text;
-
-                const dataString = `library_meta|${norm}|${reward}|${bookKey}|${bookTitle}|${childId}`;
-                tg.sendData(dataString);
-                tg.close();
+                const b = document.getElementById('bookSelect');
+                tg.sendData(`library_meta|${norm}|${reward}|${b.value}|${b.options[b.selectedIndex].text}|${childId}`);
             } else {
-                const manualTitle = document.getElementById('manualTitle').value.trim();
-                const manualText = document.getElementById('manualText').value.trim();
-
-                if (!manualTitle || !manualText) {
-                    alert("Пожалуйста, заполните название и вставьте текст рассказа!");
-                    return;
-                }
-
-                const dataString = `manual_init|${norm}|${reward}|${manualTitle}|${childId}`;
-                tg.sendData(dataString);
-                tg.close();
+                const t = document.getElementById('manualTitle').value;
+                tg.sendData(`manual_init|${norm}|${reward}|${t}|${childId}`);
             }
+            tg.close();
         }
     </script>
 </body>
