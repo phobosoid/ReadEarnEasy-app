@@ -58,10 +58,22 @@
             background-color: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #ffffff); cursor: pointer;
         }
 
+        .btn-submit:disabled {
+            background-color: var(--tg-theme-hint-color, #8e8e93); opacity: 0.6; cursor: not-allowed;
+        }
+
         .btn-secondary {
             background-color: transparent; color: var(--tg-theme-button-color, #2481cc);
             border: 1px solid var(--tg-theme-button-color, #2481cc); margin-top: 6px; width: 100%; padding: 10px; font-size: 14px; font-weight: 500; border-radius: 8px; cursor: pointer;
         }
+
+        /* Стиль подсказки-инструкции */
+        .hint-block {
+            font-size: 12px; line-height: 1.5; color: var(--tg-theme-hint-color, #8e8e93);
+            background: var(--tg-theme-secondary-bg-color, #efeff4); padding: 10px; border-radius: 8px; margin-top: 8px;
+        }
+
+        summary { font-size: 13px; font-weight: 500; color: var(--tg-theme-button-color, #2481cc); cursor: pointer; outline: none; margin-bottom: 4px; }
 
         .hidden { display: none; }
     </style>
@@ -73,18 +85,32 @@
         <p>Настройка личного плана обучения</p>
     </div>
 
+    <!-- УПРАВЛЕНИЕ УЧЕНИКАМИ -->
     <div class="card">
         <div class="card-title">👶 Ученик</div>
         <select id="childSelect" onchange="onChildChange()"><option value="">Загрузка списка...</option></select>
     </div>
 
+    <!-- УПРАВЛЕНИЕ ЛИЧНОЙ БАНКОЙ РЕБЕНКА -->
     <div class="card">
-        <div class="card-title">💳 Особиста Банка Монобанку</div>
+        <div class="card-title">💳 Особиста Банка Монобанку (Обов'язково)</div>
         <div style="margin-bottom: 8px;">
             <label for="jarUrlInput">Ссылка на Банку этого ребёнка:</label>
-            <input type="url" id="jarUrlInput" placeholder="https://send.monobank.ua/jar/...">
+            <input type="url" id="jarUrlInput" placeholder="https://send.monobank.ua/jar/..." oninput="validateForm()">
         </div>
-        <button class="btn-secondary" onclick="saveChildJar()">💾 Сохранить только ссылку на Банку</button>
+        
+        <!-- Подсказка-инструкция -->
+        <details>
+            <summary>💡 Где взять ссылку на Банку?</summary>
+            <div class="hint-block">
+                1. Откройте приложение <b>Monobank</b> на телефоне.<br>
+                2. Перейдите в раздел <b>«Банки»</b> (накопления) и создайте новую Банку для ребенка.<br>
+                3. Нажмите кнопку <b>«Поделиться ссылкой»</b> и скопируйте её.<br>
+                4. Вставьте скопированную ссылку в поле выше.
+            </div>
+        </details>
+
+        <button class="btn-secondary" id="btnSaveJar" onclick="saveChildJar()">💾 Сохранить только ссылку на Банку</button>
     </div>
 
     <div class="card">
@@ -101,9 +127,9 @@
     </div>
 
     <div class="card hidden" id="srcManualBlock">
-        <div class="card-title">📝 Новый рассказ</div>
-        <input type="text" id="manualTitle" placeholder="Название книги" style="margin-bottom:8px;">
-        <textarea id="manualText" rows="4" placeholder="Вставьте текст..."></textarea>
+        <div class="card-title">📝 Новый рассказ (Для чужих семей)</div>
+        <input type="text" id="manualTitle" placeholder="Название книги / Урока" style="margin-bottom:8px;">
+        <textarea id="manualText" rows="5" placeholder="Вставьте любой свой текст, параграф учебника или сказку сюда..."></textarea>
     </div>
 
     <div class="card">
@@ -124,36 +150,34 @@
         </div>
     </div>
 
-    <button class="btn-submit" onclick="submitPlan()">Утвердить и отправить план</button>
+    <button class="btn-submit" id="btnSubmitPlan" onclick="submitPlan()" disabled>Утвердить и отправить план</button>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
         let currentSource = 'library';
-        let childJars = {}; // Локальный реестр привязанных банковских карт
+        let childJars = {}; 
 
         const urlParams = new URLSearchParams(window.location.search);
         const childrenParam = urlParams.get('children');
         const libraryParam = urlParams.get('library');
 
-        // Рендерим выпадающий список учеников и парсим их Банки
         const childSelect = document.getElementById('childSelect');
         if (childrenParam && childrenParam !== 'none') {
             childSelect.innerHTML = '';
             childrenParam.split(',').forEach(item => {
-                const parts = item.split(':'); // parts[0] - ID, parts[1] - Имя^Банка
+                const parts = item.split(':'); 
                 const subParts = parts[1].split('^');
                 const childId = parts[0];
                 const childName = subParts[0];
                 const childJar = subParts[1] || '';
 
-                childJars[childId] = childJar; // Сохраняем в кэш
+                childJars[childId] = childJar; 
                 childSelect.innerHTML += `<option value="${childId}">${childName}</option>`;
             });
         }
 
-        // Рендерим библиотеку книг
         const bookSelect = document.getElementById('bookSelect');
         if (libraryParam && libraryParam !== 'none') {
             bookSelect.innerHTML = '';
@@ -165,18 +189,27 @@
             bookSelect.innerHTML = '<option value="">Папка library пуста на сервере</option>';
         }
 
-        // При смене ребенка обновляем инпут Банки на экране
         function onChildChange() {
             const selectedChildId = childSelect.value;
-            document.getElementById('jarUrlInput').value = childJars[selectedChildId] || '';
+            if (selectedChildId) {
+                document.getElementById('jarUrlInput').value = childJars[selectedChildId] || '';
+            }
+            validateForm();
         }
 
-        // Отдельное сохранение только Банки без назначения книги
+        // Жесткая SaaS валидация: не даем нажать кнопки, пока поле пустое
+        function validateForm() {
+            const jarUrl = document.getElementById('jarUrlInput').value.trim();
+            const isValid = jarUrl.startsWith("https://send.monobank.ua/");
+            
+            document.getElementById('btnSubmitPlan').disabled = !isValid;
+            document.getElementById('btnSaveJar').disabled = !isValid;
+        }
+
         function saveChildJar() {
             const childId = childSelect.value;
             const jarUrl = document.getElementById('jarUrlInput').value.trim();
             if (!childId) return alert("Выберите ученика!");
-            if (!jarUrl) return alert("Введите ссылку на Банку!");
             
             tg.sendData(`update_jar|${childId}|${jarUrl}`);
             tg.close();
@@ -200,13 +233,16 @@
                 const b = document.getElementById('bookSelect');
                 tg.sendData(`library_meta|${norm}|${reward}|${b.value}|${b.options[b.selectedIndex].text}|${childId}`);
             } else {
-                const t = document.getElementById('manualTitle').value;
-                tg.sendData(`manual_init|${norm}|${reward}|${t}|${childId}`);
+                const t = document.getElementById('manualTitle').value || "Ручной текст";
+                const textContent = document.getElementById('manualText').value.trim();
+                if(!textContent) return alert("Введите текст задания!");
+                
+                // Отправляем пакет ручного текста
+                tg.sendData(`manual_init|${norm}|${reward}|${t}|${childId}|${textContent}`);
             }
             tg.close();
         }
 
-        // Инициализируем поле при первой загрузке
         onChildChange();
     </script>
 </body>
