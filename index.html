@@ -14,7 +14,14 @@
         }
 
         .header h1 { font-size: 20px; margin: 0 0 4px 0; color: var(--tg-theme-button-color, #2481cc); text-align: center; }
-        .header p { font-size: 13px; margin: 0 0 20px 0; color: var(--tg-theme-hint-color, #8e8e93); text-align: center; }
+        .header p { font-size: 13px; margin: 0 0 16px 0; color: var(--tg-theme-hint-color, #8e8e93); text-align: center; }
+
+        /* СТИЛЬ ДЛЯ СТРОКИ СЧЕТЧИКА СЕМЕЙ */
+        .admin-badge {
+            text-align: center; font-size: 11px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.8px; color: var(--tg-theme-hint-color, #8e8e93);
+            background: rgba(0,0,0,0.03); padding: 6px; border-radius: 6px; margin-bottom: 12px;
+        }
 
         .card {
             background: var(--tg-theme-bg-color, #ffffff);
@@ -41,7 +48,6 @@
         }
 
         label { display: block; font-size: 13px; margin-bottom: 6px; color: var(--tg-theme-text-color, #000000); }
-
         select, input, textarea {
             width: 100%; padding: 10px 12px; font-size: 15px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px;
             box-sizing: border-box; background-color: var(--tg-theme-bg-color, #ffffff); color: var(--tg-theme-text-color, #000000);
@@ -58,22 +64,6 @@
             background-color: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #ffffff); cursor: pointer;
         }
 
-        .btn-submit:disabled {
-            background-color: var(--tg-theme-hint-color, #8e8e93); opacity: 0.6; cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background-color: transparent; color: var(--tg-theme-button-color, #2481cc);
-            border: 1px solid var(--tg-theme-button-color, #2481cc); margin-top: 6px; width: 100%; padding: 10px; font-size: 14px; font-weight: 500; border-radius: 8px; cursor: pointer;
-        }
-
-        .hint-block {
-            font-size: 12px; line-height: 1.6; color: var(--tg-theme-hint-color, #8e8e93);
-            background: var(--tg-theme-secondary-bg-color, #efeff4); padding: 12px; border-radius: 8px; margin-top: 8px;
-        }
-
-        summary { font-size: 13px; font-weight: 600; color: var(--tg-theme-button-color, #2481cc); cursor: pointer; outline: none; margin-bottom: 4px; }
-
         .hidden { display: none; }
     </style>
 </head>
@@ -84,32 +74,11 @@
         <p>Настройка личного плана обучения</p>
     </div>
 
-    <div class="card">
-        <div class="card-title">👶 Ученик</div>
-        <select id="childSelect" onchange="onChildChange()"><option value="">Загрузка списка...</option></select>
-    </div>
+    <div class="admin-badge" id="familiesBadge">Загрузка статистики...</div>
 
     <div class="card">
-        <div class="card-title">💳 Особиста Банка Монобанку (Обов'язково)</div>
-        <div style="margin-bottom: 8px;">
-            <label for="jarUrlInput">Ссылка на Банку этого ребёнка:</label>
-            <input type="url" id="jarUrlInput" placeholder="https://send.monobank.ua/jar/..." oninput="validateForm()">
-        </div>
-        
-        <details>
-            <summary>💡 Как настроить и использовать Банку</summary>
-            <div class="hint-block">
-                Для создания «Банки» выполните следующие простые шаги:<br><br>
-                1. Откройте приложение и авторизуйтесь.<br>
-                2. В нижнем меню перейдите в раздел <b>«Накопления»</b>.<br>
-                3. Нажмите кнопку <b>«Открыть банку»</b>.<br>
-                4. Введите название цели.<br>
-                5. Выберите валюту (₴) и создайте её.<br>
-                6. Скопируйте ссылку формата <i>https://send.monobank.ua/jar/...</i> и вставьте выше!
-            </div>
-        </details>
-
-        <button class="btn-secondary" id="btnSaveJar" onclick="saveChildJar()">💾 Сохранить только ссылку на Банку</button>
+        <div class="card-title">👶 Выбор ученика</div>
+        <select id="childSelect"></select>
     </div>
 
     <div class="card">
@@ -149,18 +118,21 @@
         </div>
     </div>
 
-    <button class="btn-submit" id="btnSubmitPlan" onclick="submitPlan()" disabled>Утвердить и отправить план</button>
+    <button class="btn-submit" onclick="submitPlan()">Утвердить и отправить план</button>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
         let currentSource = 'library';
-        let childJars = {}; 
 
         const urlParams = new URLSearchParams(window.location.search);
         const childrenParam = urlParams.get('children');
         const libraryParam = urlParams.get('library');
+        const familiesParam = urlParams.get('families') || '0';
+
+        // Отображаем количество семей на некликабельной панели
+        document.getElementById('familiesBadge').innerText = `📊 Семьей в системе: ${familiesParam}`;
 
         const childSelect = document.getElementById('childSelect');
         if (childrenParam && childrenParam !== 'none') {
@@ -168,13 +140,10 @@
             childrenParam.split(',').forEach(item => {
                 const parts = item.split(':'); 
                 const subParts = parts[1].split('^');
-                const childId = parts[0];
-                const childName = subParts[0];
-                const childJar = subParts[1] || '';
-
-                childJars[childId] = childJar; 
-                childSelect.innerHTML += `<option value="${childId}">${childName}</option>`;
+                childSelect.innerHTML += `<option value="${parts[0]}">${subParts[0]}</option>`;
             });
+        } else {
+            childSelect.innerHTML = '<option value="">Сначала подключите ребенка</option>';
         }
 
         const bookSelect = document.getElementById('bookSelect');
@@ -185,36 +154,7 @@
                 bookSelect.innerHTML += `<option value="${parts[0]}">${parts[1]}</option>`;
             });
         } else {
-            bookSelect.innerHTML = '<option value="">Папка library пуста на сервере</option>';
-        }
-
-        function onChildChange() {
-            const selectedChildId = childSelect.value;
-            if (selectedChildId) {
-                document.getElementById('jarUrlInput').value = childJars[selectedChildId] || '';
-            }
-            validateForm();
-        }
-
-        function validateForm() {
-            const jarUrl = document.getElementById('jarUrlInput').value.trim();
-            const isValid = jarUrl.startsWith("https://send.monobank.ua/jar/");
-            
-            document.getElementById('btnSubmitPlan').disabled = !isValid;
-            document.getElementById('btnSaveJar').disabled = !isValid;
-        }
-
-        function saveChildJar() {
-            const childId = childSelect.value;
-            const jarUrl = document.getElementById('jarUrlInput').value.trim();
-            if (!childId) return alert("Выберите ученика!");
-            
-            // 👑 ОБНОВЛЕНИЕ: Сохраняем локально, чтобы кнопка «Утвердить» сразу разблокировалась!
-            childJars[childId] = jarUrl;
-            validateForm();
-            
-            // Отправляем данные боту БЕЗ закрытия окна (tg.close убран)
-            tg.sendData(`update_jar|${childId}|${jarUrl}`);
+            bookSelect.innerHTML = '<option value="">Библиотека пуста</option>';
         }
 
         function setSource(src) {
@@ -225,10 +165,7 @@
             document.getElementById('srcManualBlock').classList.toggle('hidden', src !== 'manual');
         }
 
-        // 👑 Функция безопасного перевода текста в Base64 для Telegram API
-        function utf8_to_b64(str) {
-            return window.btoa(unescape(encodeURIComponent(str)));
-        }
+        function utf8_to_b64(str) { return window.btoa(unescape(encodeURIComponent(str))); }
 
         function submitPlan() {
             const childId = childSelect.value;
@@ -243,15 +180,12 @@
                 const t = document.getElementById('manualTitle').value || "Ручной текст";
                 const textContent = document.getElementById('manualText').value.trim();
                 if(!textContent) return alert("Введите текст задания!");
-                
-                // Кодируем кастомный текст в Base64 для защиты от кавычек
                 const secureText = utf8_to_b64(textContent);
-                tg.sendData(`manual_init|${norm}|${reward}|${t}|${childId}|${secureText}`);
+                tg.sendData inversion = `manual_init|${norm}|${reward}|${t}|${childId}|${secureText}`;
+                tg.sendData(inversion);
             }
             tg.close();
         }
-
-        onChildChange();
     </script>
 </body>
 </html>
