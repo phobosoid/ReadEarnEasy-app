@@ -103,9 +103,9 @@
                 1. Откройте приложение и авторизуйтесь.<br>
                 2. В нижнем меню перейдите в раздел <b>«Накопления»</b>.<br>
                 3. Нажмите кнопку <b>«Открыть банку»</b>.<br>
-                4. Введите название цели (например, «На книги» или «Учеба»).<br>
-                5. Выберите валюту (₴) и при желании укажите конечную сумму, которую хотите собрать.<br>
-                6. Скопируйте полученную ссылку формата <i>https://send.monobank.ua/jar/...</i> и вставьте в поле выше!
+                4. Введите название цели.<br>
+                5. Выберите валюту (₴) и создайте её.<br>
+                6. Скопируйте ссылку формата <i>https://send.monobank.ua/jar/...</i> и вставьте выше!
             </div>
         </details>
 
@@ -128,7 +128,7 @@
     <div class="card hidden" id="srcManualBlock">
         <div class="card-title">📝 Новый рассказ</div>
         <input type="text" id="manualTitle" placeholder="Название книги / Урока" style="margin-bottom:8px;">
-        <textarea id="manualText" rows="5" placeholder="Вставьте любой свой текст, параграф учебника или рассказ сюда..."></textarea>
+        <textarea id="manualText" rows="5" placeholder="Вставьте любой свой текст..."></textarea>
     </div>
 
     <div class="card">
@@ -209,8 +209,12 @@
             const jarUrl = document.getElementById('jarUrlInput').value.trim();
             if (!childId) return alert("Выберите ученика!");
             
+            // 👑 ОБНОВЛЕНИЕ: Сохраняем локально, чтобы кнопка «Утвердить» сразу разблокировалась!
+            childJars[childId] = jarUrl;
+            validateForm();
+            
+            // Отправляем данные боту БЕЗ закрытия окна (tg.close убран)
             tg.sendData(`update_jar|${childId}|${jarUrl}`);
-            tg.close();
         }
 
         function setSource(src) {
@@ -219,6 +223,11 @@
             document.getElementById('btnManual').classList.toggle('active', src === 'manual');
             document.getElementById('srcLibraryBlock').classList.toggle('hidden', src !== 'library');
             document.getElementById('srcManualBlock').classList.toggle('hidden', src !== 'manual');
+        }
+
+        // 👑 Функция безопасного перевода текста в Base64 для Telegram API
+        function utf8_to_b64(str) {
+            return window.btoa(unescape(encodeURIComponent(str)));
         }
 
         function submitPlan() {
@@ -235,7 +244,9 @@
                 const textContent = document.getElementById('manualText').value.trim();
                 if(!textContent) return alert("Введите текст задания!");
                 
-                tg.sendData(`manual_init|${norm}|${reward}|${t}|${childId}|${textContent}`);
+                // Кодируем кастомный текст в Base64 для защиты от кавычек
+                const secureText = utf8_to_b64(textContent);
+                tg.sendData(`manual_init|${norm}|${reward}|${t}|${childId}|${secureText}`);
             }
             tg.close();
         }
