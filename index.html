@@ -16,12 +16,6 @@
         .header h1 { font-size: 20px; margin: 0 0 4px 0; color: var(--tg-theme-button-color, #2481cc); text-align: center; }
         .header p { font-size: 13px; margin: 0 0 16px 0; color: var(--tg-theme-hint-color, #8e8e93); text-align: center; }
 
-        .admin-badge {
-            text-align: center; font-size: 11px; font-weight: 600; text-transform: uppercase;
-            letter-spacing: 0.8px; color: var(--tg-theme-hint-color, #8e8e93);
-            background: rgba(0,0,0,0.03); padding: 6px; border-radius: 6px; margin-bottom: 12px;
-        }
-
         .card {
             background: var(--tg-theme-bg-color, #ffffff);
             border-radius: 12px; padding: 14px; margin-bottom: 12px;
@@ -72,8 +66,6 @@
         <h1>Кабинет Родителя</h1>
         <p>Настройка личного плана обучения</p>
     </div>
-
-    <div class="admin-badge" id="familiesBadge">Загрузка статистики...</div>
 
     <div class="card">
         <div class="card-title">👶 Выбор ученика</div>
@@ -128,9 +120,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         const childrenParam = urlParams.get('children');
         const libraryParam = urlParams.get('library');
-        const familiesParam = urlParams.get('families') || '0';
-
-        document.getElementById('familiesBadge').innerText = `📊 Семьей в системе: ${familiesParam}`;
 
         const childSelect = document.getElementById('childSelect');
         if (childrenParam && childrenParam !== 'none') {
@@ -165,6 +154,7 @@
 
         function utf8_to_b64(str) { return window.btoa(unescape(encodeURIComponent(str))); }
 
+        // 👑 ИСПРАВЛЕННЫЙ И ВЫЧИЩЕННЫЙ МЕТОД ОТПРАВКИ
         function submitPlan() {
             const childId = childSelect.value;
             if (!childId) return alert("Выберите ученика!");
