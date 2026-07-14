@@ -67,13 +67,12 @@
             border: 1px solid var(--tg-theme-button-color, #2481cc); margin-top: 6px; width: 100%; padding: 10px; font-size: 14px; font-weight: 500; border-radius: 8px; cursor: pointer;
         }
 
-        /* Стиль подсказки-инструкции */
         .hint-block {
-            font-size: 12px; line-height: 1.5; color: var(--tg-theme-hint-color, #8e8e93);
-            background: var(--tg-theme-secondary-bg-color, #efeff4); padding: 10px; border-radius: 8px; margin-top: 8px;
+            font-size: 12px; line-height: 1.6; color: var(--tg-theme-hint-color, #8e8e93);
+            background: var(--tg-theme-secondary-bg-color, #efeff4); padding: 12px; border-radius: 8px; margin-top: 8px;
         }
 
-        summary { font-size: 13px; font-weight: 500; color: var(--tg-theme-button-color, #2481cc); cursor: pointer; outline: none; margin-bottom: 4px; }
+        summary { font-size: 13px; font-weight: 600; color: var(--tg-theme-button-color, #2481cc); cursor: pointer; outline: none; margin-bottom: 4px; }
 
         .hidden { display: none; }
     </style>
@@ -85,13 +84,11 @@
         <p>Настройка личного плана обучения</p>
     </div>
 
-    <!-- УПРАВЛЕНИЕ УЧЕНИКАМИ -->
     <div class="card">
         <div class="card-title">👶 Ученик</div>
         <select id="childSelect" onchange="onChildChange()"><option value="">Загрузка списка...</option></select>
     </div>
 
-    <!-- УПРАВЛЕНИЕ ЛИЧНОЙ БАНКОЙ РЕБЕНКА -->
     <div class="card">
         <div class="card-title">💳 Особиста Банка Монобанку (Обов'язково)</div>
         <div style="margin-bottom: 8px;">
@@ -99,14 +96,16 @@
             <input type="url" id="jarUrlInput" placeholder="https://send.monobank.ua/jar/..." oninput="validateForm()">
         </div>
         
-        <!-- Подсказка-инструкция -->
         <details>
-            <summary>💡 Где взять ссылку на Банку?</summary>
+            <summary>💡 Как настроить и использовать Банку</summary>
             <div class="hint-block">
-                1. Откройте приложение <b>Monobank</b> на телефоне.<br>
-                2. Перейдите в раздел <b>«Банки»</b> (накопления) и создайте новую Банку для ребенка.<br>
-                3. Нажмите кнопку <b>«Поделиться ссылкой»</b> и скопируйте её.<br>
-                4. Вставьте скопированную ссылку в поле выше.
+                Для создания «Банки» выполните следующие простые шаги:<br><br>
+                1. Откройте приложение и авторизуйтесь.<br>
+                2. В нижнем меню перейдите в раздел <b>«Накопления»</b>.<br>
+                3. Нажмите кнопку <b>«Открыть банку»</b>.<br>
+                4. Введите название цели (например, «На книги» или «Учеба»).<br>
+                5. Выберите валюту (₴) и при желании укажите конечную сумму, которую хотите собрать.<br>
+                6. Скопируйте полученную ссылку формата <i>https://send.monobank.ua/jar/...</i> и вставьте в поле выше!
             </div>
         </details>
 
@@ -127,9 +126,9 @@
     </div>
 
     <div class="card hidden" id="srcManualBlock">
-        <div class="card-title">📝 Новый рассказ (Для чужих семей)</div>
+        <div class="card-title">📝 Новый рассказ</div>
         <input type="text" id="manualTitle" placeholder="Название книги / Урока" style="margin-bottom:8px;">
-        <textarea id="manualText" rows="5" placeholder="Вставьте любой свой текст, параграф учебника или сказку сюда..."></textarea>
+        <textarea id="manualText" rows="5" placeholder="Вставьте любой свой текст, параграф учебника или рассказ сюда..."></textarea>
     </div>
 
     <div class="card">
@@ -197,10 +196,9 @@
             validateForm();
         }
 
-        // Жесткая SaaS валидация: не даем нажать кнопки, пока поле пустое
         function validateForm() {
             const jarUrl = document.getElementById('jarUrlInput').value.trim();
-            const isValid = jarUrl.startsWith("https://send.monobank.ua/");
+            const isValid = jarUrl.startsWith("https://send.monobank.ua/jar/");
             
             document.getElementById('btnSubmitPlan').disabled = !isValid;
             document.getElementById('btnSaveJar').disabled = !isValid;
@@ -237,7 +235,6 @@
                 const textContent = document.getElementById('manualText').value.trim();
                 if(!textContent) return alert("Введите текст задания!");
                 
-                // Отправляем пакет ручного текста
                 tg.sendData(`manual_init|${norm}|${reward}|${t}|${childId}|${textContent}`);
             }
             tg.close();
