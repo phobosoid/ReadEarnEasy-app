@@ -16,7 +16,6 @@
         .header h1 { font-size: 20px; margin: 0 0 4px 0; color: var(--tg-theme-button-color, #2481cc); text-align: center; }
         .header p { font-size: 13px; margin: 0 0 16px 0; color: var(--tg-theme-hint-color, #8e8e93); text-align: center; }
 
-        /* СТИЛЬ ДЛЯ СТРОКИ СЧЕТЧИКА СЕМЕЙ */
         .admin-badge {
             text-align: center; font-size: 11px; font-weight: 600; text-transform: uppercase;
             letter-spacing: 0.8px; color: var(--tg-theme-hint-color, #8e8e93);
@@ -131,7 +130,6 @@
         const libraryParam = urlParams.get('library');
         const familiesParam = urlParams.get('families') || '0';
 
-        // Отображаем количество семей на некликабельной панели
         document.getElementById('familiesBadge').innerText = `📊 Семьей в системе: ${familiesParam}`;
 
         const childSelect = document.getElementById('childSelect');
@@ -181,7 +179,7 @@
                 const textContent = document.getElementById('manualText').value.trim();
                 if(!textContent) return alert("Введите текст задания!");
                 const secureText = utf8_to_b64(textContent);
-                tg.sendData inversion = `manual_init|${norm}|${reward}|${t}|${childId}|${secureText}`;
+                const inversion = `manual_init|${norm}|${reward}|${t}|${childId}|${secureText}`;
                 tg.sendData(inversion);
             }
             tg.close();
