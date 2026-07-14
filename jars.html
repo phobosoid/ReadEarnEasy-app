@@ -49,7 +49,7 @@
 
     <div class="header">
         <h1>Финансовые настройки</h1>
-        <p>Привязка личных p2p-счетов детей</p>
+        <p>Привязка реквизитов для награды</p>
     </div>
 
     <div class="card">
@@ -58,27 +58,25 @@
     </div>
 
     <div class="card">
-        <div class="card-title">💳 Банка Монобанка</div>
+        <div class="card-title">💳 Банка Моно или Номер карты</div>
         <div style="margin-bottom: 8px;">
-            <label for="jarUrlInput">Вставьте ссылку на Банку:</label>
-            <input type="url" id="jarUrlInput" placeholder="https://send.monobank.ua/jar/..." oninput="validateForm()">
+            <label for="jarUrlInput">Вставьте ссылку или номер карты (16 цифр):</label>
+            <!-- ТИП INPUT ИЗМЕНЕН НА TEXT -->
+            <input type="text" id="jarUrlInput" placeholder="https://send.monobank... или 4149...">
         </div>
         
         <details>
-            <summary>💡 Как настроить и использовать Банку</summary>
+            <summary>💡 Инструкция по настройке</summary>
             <div class="hint-block">
-                Для создания «Банки» выполните следующие простые шаги:<br><br>
-                1. Откройте приложение и авторизуйтесь.<br>
-                2. В нижнем меню перейдите в раздел <b>«Накопления»</b>.<br>
-                3. Нажмите кнопку <b>«Открыть банку»</b>.<br>
-                4. Введите название цели.<br>
-                5. Выберите валюту (₴) и создайте её.<br>
-                6. Скопируйте ссылку формата <i>https://send.monobank.ua/jar/...</i> и вставьте выше!
+                Вы можете выбрать один из удобных вариантов:<br><br>
+                <b>Вариант 1 (Монобанка):</b> В приложении Monobank создайте Банку в разделе «Накопления», скопируйте её ссылку и вставьте сюда. Бот будет автоматически подставлять сумму и название задания в платеж!<br><br>
+                <b>Вариант 2 (Номер карты):</b> Просто впишите 16 цифр карты (ПриватБанк, Моно и др.). Бот пришлет её родителю для удобного копирования в момент успешного прохождения теста.<br><br>
+                <i>* Поле не обязательно для заполнения. Если оставить пустым, бот просто напомнит выдать награду наличными.</i>
             </div>
         </details>
     </div>
 
-    <button class="btn-submit" id="btnSaveJar" onclick="saveChildJar()" disabled>💾 Сохранить и привязать счет</button>
+    <button class="btn-submit" id="btnSaveJar" onclick="saveChildJar()">💾 Сохранить реквизиты</button>
 
     <script>
         const tg = window.Telegram.WebApp;
@@ -110,13 +108,6 @@
             if (selectedChildId) {
                 document.getElementById('jarUrlInput').value = childJars[selectedChildId] || '';
             }
-            validateForm();
-        }
-
-        function validateForm() {
-            const jarUrl = document.getElementById('jarUrlInput').value.trim();
-            const isValid = jarUrl.startsWith("https://send.monobank.ua/jar/");
-            document.getElementById('btnSaveJar').disabled = !isValid;
         }
 
         function saveChildJar() {
