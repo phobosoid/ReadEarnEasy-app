@@ -6,24 +6,26 @@
     <title>Кабинет Родителя</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: -apple-system, sans-serif; background: #f4f4f7; margin: 0; padding: 16px; color: #000; }
-        .card { background: #ffffff; border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .card-title { font-size: 12px; font-weight: 600; text-transform: uppercase; margin-bottom: 10px; color: #8e8e93; }
-        select, input, textarea { width: 100%; padding: 10px 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; box-sizing: border-box; font-size: 15px; background: #fff; }
-        .btn-submit { width: 100%; padding: 14px; background: #2481cc; color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 15px; cursor: pointer; }
-        .segment-control { display: flex; background: #efeff4; padding: 2px; border-radius: 8px; margin-bottom: 10px; }
-        .segment-btn { flex: 1; padding: 8px; border: none; border-radius: 6px; background: transparent; cursor: pointer; font-size: 13px; font-weight: 500; }
-        .segment-btn.active { background: #ffffff; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        /* 👑 КРАСИВЫЙ ТЕМНЫЙ АДАПТИВНЫЙ ИНТЕРФЕЙС КАК НА СКРИНШОТАХ */
+        body { font-family: -apple-system, sans-serif; background: var(--tg-theme-secondary-bg-color, #1c1c1d); color: var(--tg-theme-text-color, #ffffff); margin: 0; padding: 16px; }
+        .card { background: var(--tg-theme-bg-color, #2c2d30); border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .card-title { font-size: 12px; font-weight: 600; text-transform: uppercase; margin-bottom: 10px; color: var(--tg-theme-hint-color, #8e8e93); }
+        select, input, textarea { width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; box-sizing: border-box; font-size: 15px; background: var(--tg-theme-secondary-bg-color, #1c1c1d); color: var(--tg-theme-text-color, #ffffff); outline: none; }
+        .btn-submit { width: 100%; padding: 14px; background: var(--tg-theme-button-color, #4388cc); color: var(--tg-theme-button-text-color, #ffffff); border: none; border-radius: 10px; font-weight: 600; font-size: 15px; cursor: pointer; margin-top: 10px; }
+        .segment-control { display: flex; background: var(--tg-theme-secondary-bg-color, #1c1c1d); padding: 2px; border-radius: 8px; margin-bottom: 10px; }
+        .segment-btn { flex: 1; padding: 8px; border: none; border-radius: 6px; background: transparent; color: var(--tg-theme-text-color, #ffffff); cursor: pointer; font-size: 13px; font-weight: 500; }
+        .segment-btn.active { background: var(--tg-theme-bg-color, #2c2d30); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
         .hidden { display: none; }
-        label { font-size: 13px; margin-bottom: 6px; display: block; }
+        label { font-size: 13px; margin-bottom: 6px; display: block; color: var(--tg-theme-hint-color, #8e8e93); }
     </style>
 </head>
 <body>
+
     <div class="card">
         <div class="card-title">👶 Выбор ученика</div>
         <select id="childSelect"></select>
     </div>
-    
+
     <div class="card">
         <div class="card-title">📖 Режим добавления книги</div>
         <div class="segment-control">
@@ -32,12 +34,12 @@
         </div>
         
         <div id="srcLibraryBlock">
-            <div class="card-title" style="margin-top: 10px;">📕 Выбор книги</div>
+            <div class="card-title" style="margin-top: 15px;">📕 Выбор книги</div>
             <select id="bookSelect"></select>
         </div>
         
         <div id="srcManualBlock" class="hidden">
-            <div class="card-title" style="margin-top: 10px;">📝 Новый рассказ</div>
+            <div class="card-title" style="margin-top: 15px;">📝 Новый рассказ</div>
             <input type="text" id="manualTitle" placeholder="Название задания" style="margin-bottom:8px;">
             <textarea id="manualText" rows="5" placeholder="Вставьте любой свой текст..."></textarea>
         </div>
@@ -45,7 +47,7 @@
 
     <div class="card">
         <div class="card-title">⚙️ Настройки плана</div>
-        <div style="margin-bottom:10px;">
+        <div style="margin-bottom:12px;">
             <label>Дневная норма страниц:</label>
             <select id="normPages">
                 <option value="1">1 страница</option>
@@ -61,8 +63,8 @@
             <input type="number" id="rewardAmount" value="20">
         </div>
     </div>
-    
-    <button class="btn-submit" onclick="submitPlan()">Утвердить план</button>
+
+    <button class="btn-submit" onclick="submitPlan()">Утвердить и отправить план</button>
 
     <script>
         const tg = window.Telegram.WebApp; 
@@ -73,24 +75,30 @@
         const childrenParam = urlParams.get('children');
         const libraryParam = urlParams.get('library');
         
-        // ПРАВИЛЬНЫЙ ПАРСИНГ ДЕТЕЙ
+        // Надежный парсинг детей
         const childSelect = document.getElementById('childSelect');
         if (childrenParam && childrenParam !== 'none') {
+            childSelect.innerHTML = '';
             childrenParam.split(',').forEach(item => {
                 const parts = item.split(':');
-                const subParts = parts[1].split('^');
-                childSelect.innerHTML += `<option value="${parts[0]}">${subParts[0]}</option>`;
+                if (parts.length >= 2) {
+                    const subParts = parts[1].split('^');
+                    childSelect.innerHTML += `<option value="${parts[0]}">${subParts[0]}</option>`;
+                }
             });
         } else {
             childSelect.innerHTML = '<option value="">Сначала добавьте ребенка</option>';
         }
 
-        // ПРАВИЛЬНЫЙ ПАРСИНГ БИБЛИОТЕКИ
+        // Надежный парсинг библиотеки
         const bookSelect = document.getElementById('bookSelect');
         if (libraryParam && libraryParam !== 'none') {
+            bookSelect.innerHTML = '';
             libraryParam.split(',').forEach(item => {
                 const parts = item.split(':');
-                bookSelect.innerHTML += `<option value="${parts[0]}">${parts[1]}</option>`;
+                if (parts.length >= 2) {
+                    bookSelect.innerHTML += `<option value="${parts[0]}">${parts[1]}</option>`;
+                }
             });
         } else {
             bookSelect.innerHTML = '<option value="">Библиотека пуста</option>';
@@ -114,6 +122,7 @@
 
             if (currentSource === 'library') {
                 const b = document.getElementById('bookSelect');
+                if (!b.value) return alert("Выберите книгу!");
                 tg.sendData(`library_meta|${norm}|${reward}|${b.value}|${b.options[b.selectedIndex].text}|${childId}`);
             } else {
                 const t = document.getElementById('manualTitle').value || "Ручной текст";
