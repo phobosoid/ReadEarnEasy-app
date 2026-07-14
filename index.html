@@ -2,48 +2,99 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Кабинет Родителя</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: -apple-system, sans-serif; background: #f4f4f7; margin: 0; padding: 16px; }
-        .card { background: #ffffff; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+        body { font-family: -apple-system, sans-serif; background: #f4f4f7; margin: 0; padding: 16px; color: #000; }
+        .card { background: #ffffff; border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .card-title { font-size: 12px; font-weight: 600; text-transform: uppercase; margin-bottom: 10px; color: #8e8e93; }
-        select, input, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn-submit { width: 100%; padding: 14px; background: #2481cc; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
+        select, input, textarea { width: 100%; padding: 10px 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; box-sizing: border-box; font-size: 15px; background: #fff; }
+        .btn-submit { width: 100%; padding: 14px; background: #2481cc; color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 15px; cursor: pointer; }
         .segment-control { display: flex; background: #efeff4; padding: 2px; border-radius: 8px; margin-bottom: 10px; }
-        .segment-btn { flex: 1; padding: 8px; border: none; border-radius: 6px; background: none; cursor: pointer; }
-        .segment-btn.active { background: #ffffff; font-weight: 600; }
+        .segment-btn { flex: 1; padding: 8px; border: none; border-radius: 6px; background: transparent; cursor: pointer; font-size: 13px; font-weight: 500; }
+        .segment-btn.active { background: #ffffff; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .hidden { display: none; }
+        label { font-size: 13px; margin-bottom: 6px; display: block; }
     </style>
 </head>
 <body>
     <div class="card">
-        <div class="card-title">👶 Ученик</div>
+        <div class="card-title">👶 Выбор ученика</div>
         <select id="childSelect"></select>
     </div>
+    
     <div class="card">
+        <div class="card-title">📖 Режим добавления книги</div>
         <div class="segment-control">
-            <button class="segment-btn active" id="btnLib" onclick="setSource('library')">Библиотека</button>
+            <button class="segment-btn active" id="btnLib" onclick="setSource('library')">Из папки Library</button>
             <button class="segment-btn" id="btnManual" onclick="setSource('manual')">Свой текст</button>
         </div>
-        <div id="srcLibraryBlock"><select id="bookSelect"></select></div>
+        
+        <div id="srcLibraryBlock">
+            <div class="card-title" style="margin-top: 10px;">📕 Выбор книги</div>
+            <select id="bookSelect"></select>
+        </div>
+        
         <div id="srcManualBlock" class="hidden">
-            <input type="text" id="manualTitle" placeholder="Название" style="margin-bottom:8px;">
-            <textarea id="manualText" rows="5" placeholder="Текст задания..."></textarea>
+            <div class="card-title" style="margin-top: 10px;">📝 Новый рассказ</div>
+            <input type="text" id="manualTitle" placeholder="Название задания" style="margin-bottom:8px;">
+            <textarea id="manualText" rows="5" placeholder="Вставьте любой свой текст..."></textarea>
         </div>
     </div>
+
+    <div class="card">
+        <div class="card-title">⚙️ Настройки плана</div>
+        <div style="margin-bottom:10px;">
+            <label>Дневная норма страниц:</label>
+            <select id="normPages">
+                <option value="1">1 страница</option>
+                <option value="2">2 страницы</option>
+                <option value="3" selected>3 страницы</option>
+                <option value="4">4 страницы</option>
+                <option value="5">5 страниц</option>
+                <option value="10">10 страниц</option>
+            </select>
+        </div>
+        <div>
+            <label>Награда (Бук-коины / грн):</label>
+            <input type="number" id="rewardAmount" value="20">
+        </div>
+    </div>
+    
     <button class="btn-submit" onclick="submitPlan()">Утвердить план</button>
 
     <script>
-        const tg = window.Telegram.WebApp; tg.expand();
+        const tg = window.Telegram.WebApp; 
+        tg.expand();
         let currentSource = 'library';
-        const urlParams = new URLSearchParams(window.location.search);
         
-        // Заполнение данных
-        const children = JSON.parse(decodeURIComponent(urlParams.get('children') || '[]'));
+        const urlParams = new URLSearchParams(window.location.search);
+        const childrenParam = urlParams.get('children');
+        const libraryParam = urlParams.get('library');
+        
+        // ПРАВИЛЬНЫЙ ПАРСИНГ ДЕТЕЙ
         const childSelect = document.getElementById('childSelect');
-        children.forEach(c => childSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+        if (childrenParam && childrenParam !== 'none') {
+            childrenParam.split(',').forEach(item => {
+                const parts = item.split(':');
+                const subParts = parts[1].split('^');
+                childSelect.innerHTML += `<option value="${parts[0]}">${subParts[0]}</option>`;
+            });
+        } else {
+            childSelect.innerHTML = '<option value="">Сначала добавьте ребенка</option>';
+        }
+
+        // ПРАВИЛЬНЫЙ ПАРСИНГ БИБЛИОТЕКИ
+        const bookSelect = document.getElementById('bookSelect');
+        if (libraryParam && libraryParam !== 'none') {
+            libraryParam.split(',').forEach(item => {
+                const parts = item.split(':');
+                bookSelect.innerHTML += `<option value="${parts[0]}">${parts[1]}</option>`;
+            });
+        } else {
+            bookSelect.innerHTML = '<option value="">Библиотека пуста</option>';
+        }
 
         function setSource(src) {
             currentSource = src;
@@ -57,13 +108,19 @@
 
         function submitPlan() {
             const childId = childSelect.value;
+            if (!childId) return alert("Выберите ученика!");
+            const norm = document.getElementById('normPages').value;
+            const reward = document.getElementById('rewardAmount').value;
+
             if (currentSource === 'library') {
                 const b = document.getElementById('bookSelect');
-                tg.sendData(`library_meta|3|20|${b.value}|${b.options[b.selectedIndex].text}|${childId}`);
+                tg.sendData(`library_meta|${norm}|${reward}|${b.value}|${b.options[b.selectedIndex].text}|${childId}`);
             } else {
-                const t = document.getElementById('manualTitle').value;
-                const txt = utf8_to_b64(document.getElementById('manualText').value);
-                tg.sendData(`manual_init|3|20|${t}|${childId}|${txt}`);
+                const t = document.getElementById('manualTitle').value || "Ручной текст";
+                const textContent = document.getElementById('manualText').value.trim();
+                if(!textContent) return alert("Введите текст задания!");
+                const secureText = utf8_to_b64(textContent);
+                tg.sendData(`manual_init|${norm}|${reward}|${t}|${childId}|${secureText}`);
             }
             tg.close();
         }
