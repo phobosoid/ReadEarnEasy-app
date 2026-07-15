@@ -130,33 +130,31 @@
         }
 
         function submitPlan() {
-            const childId = childSelect.value;
-            if (!childId) return alert("Выберите ученика!");
-            const norm = document.getElementById('normPages').value;
-            const reward = document.getElementById('rewardAmount').value;
+    const childId = childSelect.value;
+    if (!childId) return alert("Выберите ученика!");
+    const norm = document.getElementById('normPages').value;
+    const reward = document.getElementById('rewardAmount').value;
 
-            if (currentSource === 'library') {
-                const b = document.getElementById('bookSelect');
-                if (!b.value) return alert("Выберите книгу!");
-                tg.sendData(`library_meta|${norm}|${reward}|${b.value}|${b.options[b.selectedIndex].text}|${childId}`);
-            } else {
-                const t = document.getElementById('manualTitle').value.trim() || "Ручной текст";
-                const textContent = document.getElementById('manualText').value.trim();
-                
-                if(!textContent) return alert("Введите текст задания!");
-                
-                if(textContent.length > 2500) {
-                    return alert("Текст слишком длинный! Telegram не сможет его отправить. Пожалуйста, сократите его до 2500 символов.");
-                }
-                
-                // Убираем множественные пустые строки, чтобы сэкономить лимит Telegram
-                const optimizedText = textContent.replace(/\n{3,}/g, '\n\n');
-                const secureText = utf8_to_b64(optimizedText);
-                
-                tg.sendData(`manual_init|${norm}|${reward}|${t}|${childId}|${secureText}`);
-            }
-            tg.close();
-        }
+    if (currentSource === 'library') {
+        const b = document.getElementById('bookSelect');
+        if (!b.value) return alert("Выберите книгу!");
+        tg.sendData(`library_meta|${norm}|${reward}|${b.value}|${b.options[b.selectedIndex].text}|${childId}`);
+    } else {
+        const t = document.getElementById('manualTitle').value.trim() || "Новое задание";
+        const textContent = document.getElementById('manualText').value.trim();
+        
+        if(!textContent) return alert("Введите текст задания!");
+        
+        // ВАЖНО: Мы больше не шлем сам текст через sendData, чтобы не ломать лимиты Telegram.
+        // Мы отправляем "затравку" (request), сообщая боту, что сейчас родитель пришлет текст в чат.
+        // Передаем: manual_req | норма | награда | название | childId
+        tg.sendData(`manual_req|${norm}|${reward}|${t}|${childId}`);
+        
+        // Локально сохраняем текст в sessionStorage на случай, если родителю понадобится его скопировать повторно
+        sessionStorage.setItem("pending_manual_text", textContent);
+    }
+    tg.close();
+}
     </script>
 </body>
 </html>
