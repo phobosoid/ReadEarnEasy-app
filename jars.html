@@ -36,23 +36,33 @@
         const select = document.getElementById('childSelect');
         let childJars = {};
 
-        if (childrenParam && childrenParam !== 'none') {
-            select.innerHTML = '';
-            childrenParam.split(',').forEach(item => {
-                const parts = item.split(':');
-                if (parts.length >= 2) {
-                    const subParts = parts[1].split('^');
-                    const childId = parts[0];
-                    const childName = subParts[0];
-                    const jarUrl = subParts[1] || '';
-                    
-                    childJars[childId] = jarUrl;
-                    select.innerHTML += `<option value="${childId}">${childName}</option>`;
-                }
-            });
-        } else {
-            select.innerHTML = '<option value="">Сначала добавьте ребенка</option>';
+        function showAlert(message) {
+            if (tg.showAlert) tg.showAlert(message);
+            else alert(message);
         }
+
+        function addOption(value, label) {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = label;
+            select.appendChild(option);
+        }
+
+        if (childrenParam && childrenParam !== 'none') {
+            select.replaceChildren();
+            childrenParam.split(',').forEach(item => {
+                const separator = item.indexOf(':');
+                if (separator < 1) return;
+                const childId = item.slice(0, separator);
+                const childData = item.slice(separator + 1).split('^');
+                const childName = childData[0];
+                const jarUrl = childData.slice(1).join('^');
+                if (!/^\d+$/.test(childId)) return;
+                childJars[childId] = jarUrl;
+                addOption(childId, childName);
+            });
+        }
+        if (!select.options.length) addOption('', 'Сначала добавьте ребёнка');
 
         function onChildChange() {
             const selectedId = select.value;
@@ -63,12 +73,13 @@
 
         function saveJar() {
             const id = select.value;
-            if (!id) return alert("Выберите ученика!");
+            if (!id) return showAlert("Выберите ребёнка.");
             const val = document.getElementById('jarInput').value.trim();
+            if (/[|\r\n]/.test(val)) return showAlert("Реквизиты не должны содержать переносы строк или символ |.");
             
             // Если ввели ссылку на моно, проверяем, чтобы она была без опечаток
             if (val && val.toLowerCase().includes("mono") && !val.includes("send.monobank.ua/jar/")) {
-                return alert("Пожалуйста, исправьте ссылку на Монобанку. Шаблон: https://send.monobank.ua/jar/XXXXXX");
+                return showAlert("Исправьте ссылку на Монобанку. Формат: https://send.monobank.ua/jar/XXXXXX");
             }
             
             tg.sendData(`update_jar|${id}|${val}`);

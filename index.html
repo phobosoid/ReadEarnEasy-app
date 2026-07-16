@@ -55,7 +55,7 @@
     <div class="card">
         <div class="card-title">⚙️ Настройки плана</div>
         <div style="margin-bottom:15px;">
-            <label>Дневная норма страниц:</label>
+            <label>Объём следующего задания (страниц):</label>
             <div class="stepper">
                 <button type="button" onclick="changeValue('normPages', -1)">−</button>
                 <input type="number" id="normPages" value="3" min="1" max="100">
@@ -63,7 +63,7 @@
             </div>
         </div>
         <div>
-            <label>Награда (Бук-коины / грн):</label>
+            <label>Награда (бук-коины):</label>
             <div class="stepper">
                 <button type="button" onclick="changeValue('rewardAmount', -5)">−</button>
                 <input type="number" id="rewardAmount" value="20" min="1" max="1000">
@@ -82,6 +82,22 @@
         const urlParams = new URLSearchParams(window.location.search);
         const childrenParam = urlParams.get('children');
         const libraryParam = urlParams.get('library');
+
+        function showAlert(message) {
+            if (tg.showAlert) tg.showAlert(message);
+            else alert(message);
+        }
+
+        function addOption(select, value, label) {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = label;
+            select.appendChild(option);
+        }
+
+        function isSafePayloadValue(value) {
+            return value && !/[|\r\n]/.test(value);
+        }
         
         // Функция для работы кнопок "плюс" и "минус"
         function changeValue(inputId, delta) {
@@ -96,31 +112,30 @@
         // Надежный парсинг детей
         const childSelect = document.getElementById('childSelect');
         if (childrenParam && childrenParam !== 'none') {
-            childSelect.innerHTML = '';
+            childSelect.replaceChildren();
             childrenParam.split(',').forEach(item => {
-                const parts = item.split(':');
-                if (parts.length >= 2) {
-                    const subParts = parts[1].split('^');
-                    childSelect.innerHTML += `<option value="${parts[0]}">${subParts[0]}</option>`;
-                }
+                const separator = item.indexOf(':');
+                if (separator < 1) return;
+                const childId = item.slice(0, separator);
+                const childName = item.slice(separator + 1).split('^', 1)[0];
+                if (/^\d+$/.test(childId)) addOption(childSelect, childId, childName);
             });
-        } else {
-            childSelect.innerHTML = '<option value="">Сначала добавьте ребенка</option>';
         }
+        if (!childSelect.options.length) addOption(childSelect, '', 'Сначала добавьте ребёнка');
 
         // Надежный парсинг библиотеки
         const bookSelect = document.getElementById('bookSelect');
         if (libraryParam && libraryParam !== 'none') {
-            bookSelect.innerHTML = '';
+            bookSelect.replaceChildren();
             libraryParam.split(',').forEach(item => {
-                const parts = item.split(':');
-                if (parts.length >= 2) {
-                    bookSelect.innerHTML += `<option value="${parts[0]}">${parts[1]}</option>`;
-                }
+                const separator = item.indexOf(':');
+                if (separator < 1) return;
+                const bookKey = item.slice(0, separator);
+                const bookTitle = item.slice(separator + 1);
+                if (isSafePayloadValue(bookKey) && isSafePayloadValue(bookTitle)) addOption(bookSelect, bookKey, bookTitle);
             });
-        } else {
-            bookSelect.innerHTML = '<option value="">Библиотека пуста</option>';
         }
+        if (!bookSelect.options.length) addOption(bookSelect, '', 'Библиотека пуста');
 
         function setSource(src) {
             currentSource = src;
@@ -132,17 +147,19 @@
 
         function submitPlan() {
             const childId = childSelect.value;
-            if (!childId) return alert("Выберите ученика!");
-            const norm = document.getElementById('normPages').value;
-            const reward = document.getElementById('rewardAmount').value;
+            if (!childId) return showAlert("Выберите ребёнка.");
+            const norm = Number(document.getElementById('normPages').value);
+            const reward = Number(document.getElementById('rewardAmount').value);
+            if (!Number.isInteger(norm) || norm < 1 || norm > 100) return showAlert("Объём должен быть целым числом от 1 до 100.");
+            if (!Number.isInteger(reward) || reward < 1 || reward > 1000) return showAlert("Награда должна быть целым числом от 1 до 1000.");
 
             if (currentSource === 'library') {
                 const b = document.getElementById('bookSelect');
-                if (!b.value) return alert("Выберите книгу!");
+                if (!b.value) return showAlert("Выберите книгу.");
                 tg.sendData(`library_meta|${norm}|${reward}|${b.value}|${b.options[b.selectedIndex].text}|${childId}`);
             } else {
                 const t = document.getElementById('manualTitle').value.trim();
-                if(!t) return alert("Введите название задания!");
+                if (!isSafePayloadValue(t)) return showAlert("Введите название без переноса строк и символа |.");
                 
                 // Передаем только метаданные
                 tg.sendData(`manual_req|${norm}|${reward}|${t}|${childId}`);

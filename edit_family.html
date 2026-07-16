@@ -52,39 +52,63 @@
         const membersParam = urlParams.get('members');
         const container = document.getElementById('membersContainer');
 
-        if (membersParam && membersParam !== 'none') {
-            container.innerHTML = '';
-            membersParam.split(',').forEach(item => {
-                const parts = item.split(':'); // parts[0] - ID, parts[1] - Имя^Роль
-                const subParts = parts[1].split('^');
-                const mId = parts[0];
-                const mName = subParts[0];
-                const mRole = subParts[1];
-
-                let roleText = mRole === 'child' ? '👶 Ребенок' : '👨‍👩‍👦 Родитель';
-
-                container.innerHTML += `
-                    <div class="member-row">
-                        <div class="member-info">
-                            <span class="member-name">${mName} ${mId === currentUserId ? '(Вы)' : ''}</span>
-                            <span class="member-role">${roleText}</span>
-                        </div>
-                        <button class="btn-delete" onclick="removeMember('${mId}', '${mName}')">Удалить</button>
-                    </div>
-                `;
-            });
-        } else {
-            container.innerHTML = '<p style="text-align:center; color:gray;">Участники не найдены.</p>';
+        function showAlert(message) {
+            if (tg.showAlert) tg.showAlert(message);
+            else alert(message);
         }
+
+        function addMemberRow(memberId, memberName, memberRole) {
+            const row = document.createElement('div');
+            row.className = 'member-row';
+
+            const info = document.createElement('div');
+            info.className = 'member-info';
+            const name = document.createElement('span');
+            name.className = 'member-name';
+            name.textContent = `${memberName}${memberId === currentUserId ? ' (Вы)' : ''}`;
+            const role = document.createElement('span');
+            role.className = 'member-role';
+            role.textContent = memberRole === 'child' ? '👶 Ребёнок' : '👨‍👩‍👦 Родитель';
+            info.append(name, role);
+
+            const removeButton = document.createElement('button');
+            removeButton.className = 'btn-delete';
+            removeButton.textContent = 'Удалить';
+            removeButton.addEventListener('click', () => removeMember(memberId, memberName));
+            if (memberId === currentUserId) removeButton.disabled = true;
+
+            row.append(info, removeButton);
+            container.appendChild(row);
+        }
+
+        if (membersParam && membersParam !== 'none') {
+            container.replaceChildren();
+            membersParam.split(',').forEach(item => {
+                const separator = item.indexOf(':');
+                if (separator < 1) return;
+                const mId = item.slice(0, separator);
+                const memberData = item.slice(separator + 1).split('^');
+                const mName = memberData[0];
+                const mRole = memberData[1];
+                if (/^\d+$/.test(mId) && mName && (mRole === 'child' || mRole === 'parent')) {
+                    addMemberRow(mId, mName, mRole);
+                }
+            });
+        }
+        if (!container.children.length) container.textContent = 'Участники не найдены.';
 
         function removeMember(id, name) {
             if (currentUserId && id === currentUserId) {
-                return alert("Вы не можете удалить самого себя из интерфейса управления семьей!");
+                return showAlert("Вы не можете удалить себя из состава семьи.");
             }
-            if (confirm(`Вы уверены, что хотите навсегда удалить пользователя ${name} из системы семьи? Все его активные задания будут аннулированы.`)) {
-                tg.sendData(`remove_member|${id}|${name}`);
+            const message = `Удалить пользователя «${name}»? Его активные задания также будут удалены.`;
+            const confirmRemoval = (confirmed) => {
+                if (!confirmed) return;
+                tg.sendData(`remove_member|${id}|${name.replace(/[|\r\n]/g, ' ')}`);
                 tg.close();
-            }
+            };
+            if (tg.showConfirm) tg.showConfirm(message, confirmRemoval);
+            else confirmRemoval(confirm(message));
         }
     </script>
 </body>
