@@ -6,37 +6,59 @@
     <title>Состав семьи</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        :root {
+            --bg: var(--tg-theme-secondary-bg-color, #f5f1e8);
+            --card: var(--tg-theme-bg-color, #ffffff);
+            --text: var(--tg-theme-text-color, #2b2621);
+            --hint: var(--tg-theme-hint-color, #8a8178);
+            --accent: var(--tg-theme-button-color, #2f8f8a);
+            --border: rgba(43, 38, 33, 0.08);
+        }
+        * { box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--tg-theme-secondary-bg-color, #1c1c1d);
-            color: var(--tg-theme-text-color, #ffffff);
-            margin: 0; padding: 16px;
+            background-color: var(--bg); color: var(--text); margin: 0; padding: 16px 16px 32px;
         }
-        .header h1 { font-size: 20px; margin: 0 0 4px 0; color: var(--tg-theme-button-color, #4388cc); text-align: center; }
-        .header p { font-size: 13px; margin: 0 0 20px 0; color: var(--tg-theme-hint-color, #8e8e93); text-align: center; }
-        
+        .header { text-align: center; margin-bottom: 18px; }
+        .header .emoji { font-size: 32px; margin-bottom: 4px; }
+        .header h1 { font-size: 19px; margin: 0 0 4px; color: var(--text); }
+        .header p { font-size: 13px; margin: 0; color: var(--hint); }
+
         .member-row {
             display: flex; justify-content: space-between; align-items: center;
-            background: var(--tg-theme-bg-color, #2c2d30);
-            border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         }
-        .member-info { display: flex; flex-direction: column; }
-        .member-name { font-size: 16px; font-weight: 600; }
-        .member-role { font-size: 12px; color: var(--tg-theme-hint-color, #8e8e93); text-transform: uppercase; margin-top: 2px; }
-        
+        .member-info { display: flex; align-items: center; gap: 10px; }
+        .avatar {
+            width: 38px; height: 38px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+            background: rgba(47,143,138,0.12);
+        }
+        .member-text { display: flex; flex-direction: column; }
+        .member-name { font-size: 15px; font-weight: 700; }
+        .member-role { font-size: 12px; color: var(--hint); margin-top: 1px; }
+
         .btn-delete {
-            background-color: #ff3b30; color: #ffffff; border: none;
-            padding: 8px 12px; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer;
+            background: rgba(255,59,48,0.12); color: #ff3b30; border: none;
+            padding: 9px 14px; font-size: 13px; font-weight: 700; border-radius: 9px; cursor: pointer;
         }
-        .btn-delete:active { background-color: #d32f2f; }
+        .btn-delete:active { background: rgba(255,59,48,0.22); }
+        .btn-delete:disabled { opacity: 0.35; background: transparent; }
+
+        .empty-state {
+            text-align: center; padding: 24px 12px; color: var(--hint); font-size: 14px;
+            background: var(--card); border-radius: 14px; border: 1px solid var(--border);
+        }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>👨‍👩‍👦 Состав семьи</h1>
-        <p>Управление учетными записями участников</p>
+        <div class="emoji">👨‍👩‍👦</div>
+        <h1>Состав семьи</h1>
+        <p>Здесь видно всех, кто подключён к общему аккаунту</p>
     </div>
 
     <div id="membersContainer"></div>
@@ -45,7 +67,6 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Получаем информацию о том, кто именно открыл это Mini App
         const currentUserId = tg.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : null;
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -63,13 +84,21 @@
 
             const info = document.createElement('div');
             info.className = 'member-info';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = memberRole === 'child' ? '👶' : '👤';
+
+            const text = document.createElement('div');
+            text.className = 'member-text';
             const name = document.createElement('span');
             name.className = 'member-name';
-            name.textContent = `${memberName}${memberId === currentUserId ? ' (Вы)' : ''}`;
+            name.textContent = `${memberName}${memberId === currentUserId ? ' (вы)' : ''}`;
             const role = document.createElement('span');
             role.className = 'member-role';
-            role.textContent = memberRole === 'child' ? '👶 Ребёнок' : '👨‍👩‍👦 Родитель';
-            info.append(name, role);
+            role.textContent = memberRole === 'child' ? 'Ребёнок' : 'Родитель';
+            text.append(name, role);
+            info.append(avatar, text);
 
             const removeButton = document.createElement('button');
             removeButton.className = 'btn-delete';
@@ -95,7 +124,12 @@
                 }
             });
         }
-        if (!container.children.length) container.textContent = 'Участники не найдены.';
+        if (!container.children.length) {
+            const empty = document.createElement('div');
+            empty.className = 'empty-state';
+            empty.textContent = 'Участники не найдены.';
+            container.appendChild(empty);
+        }
 
         function removeMember(id, name) {
             if (currentUserId && id === currentUserId) {

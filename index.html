@@ -3,59 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Кабинет Родителя</title>
+    <title>Кабинет родителя</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* 👑 КРАСИВЫЙ ТЕМНЫЙ АДАПТИВНЫЙ ИНТЕРФЕЙС */
-        body { font-family: -apple-system, sans-serif; background: var(--tg-theme-secondary-bg-color, #1c1c1d); color: var(--tg-theme-text-color, #ffffff); margin: 0; padding: 16px; }
-        .card { background: var(--tg-theme-bg-color, #2c2d30); border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-        .card-title { font-size: 12px; font-weight: 600; text-transform: uppercase; margin-bottom: 10px; color: var(--tg-theme-hint-color, #8e8e93); }
-        select, input, textarea { width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; box-sizing: border-box; font-size: 15px; background: var(--tg-theme-secondary-bg-color, #1c1c1d); color: var(--tg-theme-text-color, #ffffff); outline: none; }
-        .btn-submit { width: 100%; padding: 14px; background: var(--tg-theme-button-color, #4388cc); color: var(--tg-theme-button-text-color, #ffffff); border: none; border-radius: 10px; font-weight: 600; font-size: 15px; cursor: pointer; margin-top: 10px; }
-        .segment-control { display: flex; background: var(--tg-theme-secondary-bg-color, #1c1c1d); padding: 2px; border-radius: 8px; margin-bottom: 10px; }
-        .segment-btn { flex: 1; padding: 8px; border: none; border-radius: 6px; background: transparent; color: var(--tg-theme-text-color, #ffffff); cursor: pointer; font-size: 13px; font-weight: 500; }
-        .segment-btn.active { background: var(--tg-theme-bg-color, #2c2d30); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        :root {
+            --bg: var(--tg-theme-secondary-bg-color, #f5f1e8);
+            --card: var(--tg-theme-bg-color, #ffffff);
+            --text: var(--tg-theme-text-color, #2b2621);
+            --hint: var(--tg-theme-hint-color, #8a8178);
+            --accent: var(--tg-theme-button-color, #2f8f8a);
+            --accent-text: var(--tg-theme-button-text-color, #ffffff);
+            --warm: #ff9f43;
+            --border: rgba(43, 38, 33, 0.08);
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg); color: var(--text);
+            margin: 0; padding: 16px 16px 32px; line-height: 1.4;
+        }
+        .header { text-align: center; margin-bottom: 18px; }
+        .header .emoji { font-size: 32px; margin-bottom: 4px; }
+        .header h1 { font-size: 19px; margin: 0 0 4px; }
+        .header p { font-size: 13px; color: var(--hint); margin: 0; }
+
+        .card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 16px; margin-bottom: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .card-title {
+            font-size: 13px; font-weight: 700; margin-bottom: 10px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .card-hint { font-size: 12px; color: var(--hint); margin: -4px 0 12px; line-height: 1.5; }
+
+        select, input, textarea {
+            width: 100%; padding: 13px; border: 1px solid var(--border); border-radius: 10px;
+            box-sizing: border-box; font-size: 15px; background: var(--bg); color: var(--text); outline: none;
+        }
+        select:focus, input:focus { border-color: var(--accent); }
+
+        .btn-submit {
+            width: 100%; padding: 16px; background: var(--accent); color: var(--accent-text);
+            border: none; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 4px;
+        }
+        .btn-submit:active { opacity: 0.85; }
+
+        .segment-control {
+            display: flex; background: var(--bg); padding: 3px; border-radius: 10px; margin-bottom: 4px;
+        }
+        .segment-btn {
+            flex: 1; padding: 10px 6px; border: none; border-radius: 8px; background: transparent;
+            color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600;
+        }
+        .segment-btn.active { background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,0.08); color: var(--accent); }
+
         .hidden { display: none; }
-        label { font-size: 13px; margin-bottom: 6px; display: block; color: var(--tg-theme-hint-color, #8e8e93); }
-        
-        /* Стили для удобного выбора с кнопками-стрелочками */
-        .stepper { display: flex; align-items: center; background: var(--tg-theme-secondary-bg-color, #1c1c1d); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; overflow: hidden; }
-        .stepper button { width: 50px; height: 45px; background: rgba(255,255,255,0.05); border: none; color: var(--tg-theme-text-color, #ffffff); font-size: 20px; font-weight: bold; cursor: pointer; }
-        .stepper button:active { background: rgba(255,255,255,0.1); }
-        .stepper input { border: none; text-align: center; height: 45px; font-size: 16px; font-weight: 600; background: transparent; }
-        /* Прячем стрелочки браузера у числового инпута */
+        label { font-size: 13px; margin-bottom: 6px; display: block; color: var(--hint); font-weight: 600; }
+
+        .stepper {
+            display: flex; align-items: center; background: var(--bg);
+            border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+        }
+        .stepper button {
+            width: 52px; height: 48px; background: transparent; border: none;
+            color: var(--accent); font-size: 22px; font-weight: bold; cursor: pointer;
+        }
+        .stepper button:active { background: rgba(0,0,0,0.04); }
+        .stepper input {
+            border: none; text-align: center; height: 48px; font-size: 17px; font-weight: 700;
+            background: transparent; padding: 0;
+        }
         .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        .reward-preview {
+            font-size: 12px; color: var(--hint); margin-top: 10px; text-align: center;
+            background: rgba(255,159,67,0.12); border-radius: 8px; padding: 8px;
+        }
+        .reward-preview b { color: var(--warm); }
+
+        .empty-state {
+            text-align: center; padding: 8px 4px; font-size: 13px; color: var(--hint);
+        }
+
+        .mode-toggle {
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(47,143,138,0.08); border-radius: 12px; padding: 12px;
+        }
+        .mode-toggle-text { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+        .mode-toggle-title { font-size: 13px; font-weight: 700; }
+        .mode-toggle-hint { font-size: 11px; color: var(--hint); line-height: 1.5; }
+
+        .switch { position: relative; display: inline-block; width: 46px; height: 27px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .switch-slider {
+            position: absolute; cursor: pointer; inset: 0; background-color: rgba(0,0,0,0.15);
+            transition: 0.2s; border-radius: 27px;
+        }
+        .switch-slider::before {
+            position: absolute; content: ""; height: 21px; width: 21px; left: 3px; bottom: 3px;
+            background-color: white; transition: 0.2s; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .switch input:checked + .switch-slider { background-color: var(--accent); }
+        .switch input:checked + .switch-slider::before { transform: translateX(19px); }
     </style>
 </head>
 <body>
 
+    <div class="header">
+        <div class="emoji">📚</div>
+        <h1>Новое задание для ребёнка</h1>
+        <p>Выберите книгу, объём чтения и награду — мы пришлём план на завтра в 09:00</p>
+    </div>
+
     <div class="card">
-        <div class="card-title">👶 Выбор ученика</div>
+        <div class="card-title">👶 Кому назначаем</div>
         <select id="childSelect"></select>
     </div>
 
     <div class="card">
-        <div class="card-title">📖 Режим добавления книги</div>
+        <div class="card-title">📖 Что читаем</div>
         <div class="segment-control">
-            <button class="segment-btn active" id="btnLib" onclick="setSource('library')">Из папки Library</button>
-            <button class="segment-btn" id="btnManual" onclick="setSource('manual')">Свой текст / Ссылка</button>
+            <button class="segment-btn active" id="btnLib" type="button" onclick="setSource('library')">Из библиотеки</button>
+            <button class="segment-btn" id="btnManual" type="button" onclick="setSource('manual')">Свой текст / ссылка</button>
         </div>
-        
-        <div id="srcLibraryBlock">
-            <div class="card-title" style="margin-top: 15px;">📕 Выбор книги</div>
+
+        <div id="srcLibraryBlock" style="margin-top: 14px;">
+            <label>Книга</label>
             <select id="bookSelect"></select>
+
+            <div class="mode-toggle" style="margin-top: 14px;">
+                <div class="mode-toggle-text">
+                    <span class="mode-toggle-title" id="modeTitle">🔁 Автопилот включён</span>
+                    <span class="mode-toggle-hint" id="modeHint">Когда книга закончится, бот сам назначит следующую непрочитанную книгу из библиотеки — вам не нужно будет заходить сюда каждый раз.</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="autoContinueToggle" checked onchange="updateModeText()">
+                    <span class="switch-slider"></span>
+                </label>
+            </div>
         </div>
-        
-        <div id="srcManualBlock" class="hidden">
-            <div class="card-title" style="margin-top: 15px;">📝 Новый рассказ или ссылка</div>
-            <input type="text" id="manualTitle" placeholder="Название задания (например: Сказка о рыбаке)" style="margin-bottom:8px;" maxlength="100">
+
+        <div id="srcManualBlock" class="hidden" style="margin-top: 14px;">
+            <label>Название задания</label>
+            <input type="text" id="manualTitle" placeholder="Например: Сказка о рыбаке" maxlength="100">
+            <div class="card-hint" style="margin-top: 8px;">На следующем шаге бот попросит прислать сам текст — просто напишите его в чат или пришлите ссылку на статью/рассказ, и он подставится сам.</div>
         </div>
     </div>
 
     <div class="card">
-        <div class="card-title">⚙️ Настройки плана</div>
-        <div style="margin-bottom:15px;">
-            <label>Объём следующего задания (страниц):</label>
+        <div class="card-title">⚙️ Параметры задания</div>
+        <div style="margin-bottom: 16px;">
+            <label>Сколько страниц за раз</label>
             <div class="stepper">
                 <button type="button" onclick="changeValue('normPages', -1)">−</button>
                 <input type="number" id="normPages" value="3" min="1" max="100">
@@ -63,22 +163,23 @@
             </div>
         </div>
         <div>
-            <label>Награда (бук-коины):</label>
+            <label>Награда за задание (Бук-коины)</label>
             <div class="stepper">
                 <button type="button" onclick="changeValue('rewardAmount', -5)">−</button>
                 <input type="number" id="rewardAmount" value="20" min="1" max="1000">
                 <button type="button" onclick="changeValue('rewardAmount', 5)">+</button>
             </div>
         </div>
+        <div class="reward-preview">За правильно решённый тест ребёнок получит <b id="rewardPreview">20</b> коинов, а вам придёт запрос на оплату.</div>
     </div>
 
-    <button class="btn-submit" onclick="submitPlan()">Утвердить и отправить план</button>
+    <button class="btn-submit" onclick="submitPlan()">✅ Отправить задание ребёнку</button>
 
     <script>
-        const tg = window.Telegram.WebApp; 
+        const tg = window.Telegram.WebApp;
         tg.expand();
         let currentSource = 'library';
-        
+
         const urlParams = new URLSearchParams(window.location.search);
         const childrenParam = urlParams.get('children');
         const libraryParam = urlParams.get('library');
@@ -98,8 +199,7 @@
         function isSafePayloadValue(value) {
             return value && !/[|\r\n]/.test(value);
         }
-        
-        // Функция для работы кнопок "плюс" и "минус"
+
         function changeValue(inputId, delta) {
             const input = document.getElementById(inputId);
             let val = parseInt(input.value) || 0;
@@ -107,9 +207,14 @@
             if (val < parseInt(input.min)) val = parseInt(input.min);
             if (input.max && val > parseInt(input.max)) val = parseInt(input.max);
             input.value = val;
+            updateRewardPreview();
         }
-        
-        // Надежный парсинг детей
+
+        function updateRewardPreview() {
+            document.getElementById('rewardPreview').textContent = document.getElementById('rewardAmount').value;
+        }
+        document.getElementById('rewardAmount').addEventListener('input', updateRewardPreview);
+
         const childSelect = document.getElementById('childSelect');
         if (childrenParam && childrenParam !== 'none') {
             childSelect.replaceChildren();
@@ -121,9 +226,10 @@
                 if (/^\d+$/.test(childId)) addOption(childSelect, childId, childName);
             });
         }
-        if (!childSelect.options.length) addOption(childSelect, '', 'Сначала добавьте ребёнка');
+        if (!childSelect.options.length) {
+            addOption(childSelect, '', 'Сначала добавьте ребёнка в разделе «Состав семьи»');
+        }
 
-        // Надежный парсинг библиотеки
         const bookSelect = document.getElementById('bookSelect');
         if (libraryParam && libraryParam !== 'none') {
             bookSelect.replaceChildren();
@@ -135,7 +241,7 @@
                 if (isSafePayloadValue(bookKey) && isSafePayloadValue(bookTitle)) addOption(bookSelect, bookKey, bookTitle);
             });
         }
-        if (!bookSelect.options.length) addOption(bookSelect, '', 'Библиотека пуста');
+        if (!bookSelect.options.length) addOption(bookSelect, '', 'Библиотека пуста на сервере');
 
         function setSource(src) {
             currentSource = src;
@@ -143,6 +249,14 @@
             document.getElementById('btnManual').classList.toggle('active', src === 'manual');
             document.getElementById('srcLibraryBlock').classList.toggle('hidden', src !== 'library');
             document.getElementById('srcManualBlock').classList.toggle('hidden', src !== 'manual');
+        }
+
+        function updateModeText() {
+            const isAuto = document.getElementById('autoContinueToggle').checked;
+            document.getElementById('modeTitle').textContent = isAuto ? '🔁 Автопилот включён' : '✋ Ручной режим';
+            document.getElementById('modeHint').textContent = isAuto
+                ? 'Когда книга закончится, бот сам назначит следующую непрочитанную книгу из библиотеки — вам не нужно будет заходить сюда каждый раз.'
+                : 'Когда книга закончится, бот пришлёт вам сообщение — и вы сами выберете следующую книгу здесь, в Кабинете.';
         }
 
         function submitPlan() {
@@ -156,12 +270,11 @@
             if (currentSource === 'library') {
                 const b = document.getElementById('bookSelect');
                 if (!b.value) return showAlert("Выберите книгу.");
-                tg.sendData(`library_meta|${norm}|${reward}|${b.value}|${b.options[b.selectedIndex].text}|${childId}`);
+                const autoFlag = document.getElementById('autoContinueToggle').checked ? '1' : '0';
+                tg.sendData(`library_meta|${norm}|${reward}|${b.value}|${b.options[b.selectedIndex].text}|${autoFlag}|${childId}`);
             } else {
                 const t = document.getElementById('manualTitle').value.trim();
                 if (!isSafePayloadValue(t)) return showAlert("Введите название без переноса строк и символа |.");
-                
-                // Передаем только метаданные
                 tg.sendData(`manual_req|${norm}|${reward}|${t}|${childId}`);
             }
             tg.close();
