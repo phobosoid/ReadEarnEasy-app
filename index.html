@@ -5,83 +5,115 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Кабинет родителя</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: var(--tg-theme-secondary-bg-color, #f5f1e8);
-            --card: var(--tg-theme-bg-color, #ffffff);
-            --text: var(--tg-theme-text-color, #2b2621);
-            --hint: var(--tg-theme-hint-color, #8a8178);
-            --accent: var(--tg-theme-button-color, #2f8f8a);
-            --accent-text: var(--tg-theme-button-text-color, #ffffff);
-            --warm: #ff9f43;
-            --border: rgba(43, 38, 33, 0.08);
+            /* фон/карточки/текст наследуются из реальной темы Telegram, с тёплым книжным фолбэком вне Telegram */
+            --bg: var(--tg-theme-secondary-bg-color, #F1E7D2);
+            --card: var(--tg-theme-bg-color, #FBF6EA);
+            --text: var(--tg-theme-text-color, #2B2118);
+            --hint: var(--tg-theme-hint-color, #6B5D48);
+            /* фирменные акценты не зависят от акцента Telegram — одинаковы у всех пользователей */
+            --accent: #1E4A3C;
+            --accent-text: #F1E6D3;
+            --accent-soft: rgba(30,74,60,0.10);
+            --brass: #A9772E;
+            --brass-soft: rgba(169,119,46,0.14);
+            --border: rgba(43,33,24,0.14);
+            --shadow: rgba(43,33,24,0.16);
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --accent: #6FBFA0;
+                --accent-text: #16241D;
+                --accent-soft: rgba(111,191,160,0.14);
+                --brass: #D9AC5E;
+                --brass-soft: rgba(217,172,94,0.16);
+                --border: rgba(241,230,211,0.14);
+                --shadow: rgba(0,0,0,0.4);
+            }
         }
         * { box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: "Nunito Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: var(--bg); color: var(--text);
-            margin: 0; padding: 16px 16px 32px; line-height: 1.4;
+            margin: 0; padding: 20px 16px 32px; line-height: 1.45;
         }
-        .header { text-align: center; margin-bottom: 18px; }
-        .header .emoji { font-size: 32px; margin-bottom: 4px; }
-        .header h1 { font-size: 19px; margin: 0 0 4px; }
-        .header p { font-size: 13px; color: var(--hint); margin: 0; }
+        h1, .card-title, .mode-toggle-title { font-family: "Fraunces", Georgia, serif; }
+
+        .header { text-align: center; margin-bottom: 22px; }
+        .header .emoji {
+            width: 52px; height: 52px; margin: 0 auto 10px; border-radius: 16px;
+            background: var(--accent-soft); display: flex; align-items: center; justify-content: center;
+            font-size: 26px;
+        }
+        .header h1 { font-size: 21px; font-weight: 700; margin: 0 0 6px; letter-spacing: -0.01em; }
+        .header p { font-size: 13.5px; color: var(--hint); margin: 0; max-width: 30ch; margin-inline: auto; }
 
         .card {
             background: var(--card); border: 1px solid var(--border);
-            border-radius: 16px; padding: 16px; margin-bottom: 14px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            border-radius: 18px; padding: 18px; margin-bottom: 14px;
+            box-shadow: 0 6px 18px -14px var(--shadow);
         }
         .card-title {
-            font-size: 13px; font-weight: 700; margin-bottom: 10px;
-            display: flex; align-items: center; gap: 6px;
+            font-size: 15px; font-weight: 600; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
         }
-        .card-hint { font-size: 12px; color: var(--hint); margin: -4px 0 12px; line-height: 1.5; }
+        .card-hint { font-size: 12.5px; color: var(--hint); margin: -4px 0 12px; line-height: 1.55; }
 
         select, input, textarea {
-            width: 100%; padding: 13px; border: 1px solid var(--border); border-radius: 10px;
-            box-sizing: border-box; font-size: 15px; background: var(--bg); color: var(--text); outline: none;
+            width: 100%; padding: 13px 14px; border: 1px solid var(--border); border-radius: 11px;
+            box-sizing: border-box; font-size: 15px; font-family: inherit; background: var(--bg); color: var(--text); outline: none;
         }
         select:focus, input:focus { border-color: var(--accent); }
+        select {
+            appearance: none; -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1.5 7 7.5 13 1.5' fill='none' stroke='%236B5D48' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px;
+        }
 
         .btn-submit {
-            width: 100%; padding: 16px; background: var(--accent); color: var(--accent-text);
-            border: none; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 4px;
+            width: 100%; padding: 17px; background: var(--accent); color: var(--accent-text);
+            border: none; border-radius: 13px; font-weight: 800; font-size: 16px; cursor: pointer; margin-top: 4px;
+            box-shadow: 0 10px 22px -14px var(--shadow);
         }
-        .btn-submit:active { opacity: 0.85; }
+        .btn-submit:active { opacity: 0.88; }
 
         .segment-control {
-            display: flex; background: var(--bg); padding: 3px; border-radius: 10px; margin-bottom: 4px;
+            display: flex; background: var(--bg); padding: 4px; border-radius: 11px; margin-bottom: 4px;
         }
         .segment-btn {
             flex: 1; padding: 10px 6px; border: none; border-radius: 8px; background: transparent;
-            color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600;
+            color: var(--hint); cursor: pointer; font-size: 13px; font-weight: 700; font-family: inherit;
         }
-        .segment-btn.active { background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,0.08); color: var(--accent); }
+        .segment-btn.active { background: var(--card); box-shadow: 0 2px 6px -2px var(--shadow); color: var(--accent); }
 
         .hidden { display: none; }
-        label { font-size: 13px; margin-bottom: 6px; display: block; color: var(--hint); font-weight: 600; }
+        label { font-size: 12.5px; margin-bottom: 7px; display: block; color: var(--hint); font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
 
         .stepper {
-            display: flex; align-items: center; background: var(--bg);
-            border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+            display: flex; align-items: center; justify-content: space-between; background: var(--bg);
+            border: 1px solid var(--border); border-radius: 12px; padding: 4px;
         }
         .stepper button {
-            width: 52px; height: 48px; background: transparent; border: none;
-            color: var(--accent); font-size: 22px; font-weight: bold; cursor: pointer;
+            width: 42px; height: 42px; flex-shrink: 0; background: var(--card); border: 1px solid var(--border);
+            border-radius: 9px; color: var(--accent); font-size: 19px; font-weight: 700; cursor: pointer;
+            font-family: inherit;
         }
-        .stepper button:active { background: rgba(0,0,0,0.04); }
+        .stepper button:active { background: var(--accent-soft); }
         .stepper input {
-            border: none; text-align: center; height: 48px; font-size: 17px; font-weight: 700;
-            background: transparent; padding: 0;
+            border: none; text-align: center; height: 42px; font-size: 18px; font-weight: 800;
+            background: transparent; padding: 0; width: auto; flex: 1;
         }
         .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
         .reward-preview {
-            font-size: 12px; color: var(--hint); margin-top: 10px; text-align: center;
-            background: rgba(255,159,67,0.12); border-radius: 8px; padding: 8px;
+            font-size: 12.5px; color: var(--hint); margin-top: 12px; text-align: center;
+            background: var(--brass-soft); border-radius: 10px; padding: 10px; line-height: 1.5;
         }
-        .reward-preview b { color: var(--warm); }
+        .reward-preview b { color: var(--brass); }
 
         .empty-state {
             text-align: center; padding: 8px 4px; font-size: 13px; color: var(--hint);
@@ -89,21 +121,21 @@
 
         .mode-toggle {
             display: flex; align-items: center; gap: 12px;
-            background: rgba(47,143,138,0.08); border-radius: 12px; padding: 12px;
+            background: var(--accent-soft); border-radius: 13px; padding: 13px;
         }
         .mode-toggle-text { display: flex; flex-direction: column; gap: 3px; flex: 1; }
-        .mode-toggle-title { font-size: 13px; font-weight: 700; }
-        .mode-toggle-hint { font-size: 11px; color: var(--hint); line-height: 1.5; }
+        .mode-toggle-title { font-size: 14px; font-weight: 700; }
+        .mode-toggle-hint { font-size: 11.5px; color: var(--hint); line-height: 1.55; font-family: "Nunito Sans", sans-serif; }
 
         .switch { position: relative; display: inline-block; width: 46px; height: 27px; flex-shrink: 0; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .switch-slider {
-            position: absolute; cursor: pointer; inset: 0; background-color: rgba(0,0,0,0.15);
+            position: absolute; cursor: pointer; inset: 0; background-color: rgba(43,33,24,0.18);
             transition: 0.2s; border-radius: 27px;
         }
         .switch-slider::before {
             position: absolute; content: ""; height: 21px; width: 21px; left: 3px; bottom: 3px;
-            background-color: white; transition: 0.2s; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            background-color: var(--card); transition: 0.2s; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
         .switch input:checked + .switch-slider { background-color: var(--accent); }
         .switch input:checked + .switch-slider::before { transform: translateX(19px); }
