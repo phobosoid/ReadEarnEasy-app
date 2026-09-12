@@ -15,10 +15,11 @@
             --card: var(--tg-theme-bg-color, #FBF6EA);
             --text: var(--tg-theme-text-color, #2B2118);
             --hint: var(--tg-theme-hint-color, #6B5D48);
-            /* фирменные акценты не зависят от акцента Telegram — одинаковы у всех пользователей */
-            --accent: #1E4A3C;
+            /* фирменные акценты не зависят от акцента Telegram — одинаковы у всех пользователей,
+               и совпадают с цветом кнопки Telegram на лендинге/favicon для единого бренда */
+            --accent: #2F8F8A;
             --accent-text: #F1E6D3;
-            --accent-soft: rgba(30,74,60,0.10);
+            --accent-soft: rgba(47,143,138,0.10);
             --brass: #A9772E;
             --brass-soft: rgba(169,119,46,0.14);
             --border: rgba(43,33,24,0.14);
@@ -26,9 +27,9 @@
         }
         @media (prefers-color-scheme: dark) {
             :root {
-                --accent: #6FBFA0;
+                --accent: #4FBDB6;
                 --accent-text: #16241D;
-                --accent-soft: rgba(111,191,160,0.14);
+                --accent-soft: rgba(79,189,182,0.14);
                 --brass: #D9AC5E;
                 --brass-soft: rgba(217,172,94,0.16);
                 --border: rgba(241,230,211,0.14);
@@ -46,9 +47,10 @@
         .header { text-align: center; margin-bottom: 22px; }
         .header .emoji {
             width: 52px; height: 52px; margin: 0 auto 10px; border-radius: 16px;
-            background: var(--accent-soft); display: flex; align-items: center; justify-content: center;
-            font-size: 26px;
+            background: var(--accent); display: flex; align-items: center; justify-content: center;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.14);
         }
+        .header .emoji svg { width: 28px; height: 28px; }
         .header h1 { font-size: 21px; font-weight: 700; margin: 0 0 6px; letter-spacing: -0.01em; }
         .header p { font-size: 13.5px; color: var(--hint); margin: 0; max-width: 30ch; margin-inline: auto; }
 
@@ -144,7 +146,9 @@
 <body>
 
     <div class="header">
-        <div class="emoji">📚</div>
+        <div class="emoji">
+            <svg viewBox="0 0 24 24"><path d="M15 2H17.2V11L16.1 9.3L15 11Z" fill="#ffffff"/><rect x="5" y="6" width="10.5" height="11.2" rx="1.5" fill="#ffffff"/><rect x="5" y="15.6" width="10.5" height="2.3" rx="1.1" fill="#ffffff" fill-opacity="0.55"/><circle cx="9" cy="12.6" r="3.4" fill="var(--accent)"/><path d="M7.3 12.6l1.3 1.3l2.3-2.6" stroke="#ffffff" stroke-width="1.15" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
         <h1>Новое задание для ребёнка</h1>
         <p>Выберите книгу, объём чтения и награду — мы пришлём план на завтра в 09:00</p>
     </div>
