@@ -130,7 +130,9 @@
             tg.close();
         }
 
-        function addMemberRow(memberId, memberName, memberRole) {
+        const PARENT_ROLE_LABELS = { papa: 'Папа', mama: 'Мама', guardian: 'Опекун' };
+
+        function addMemberRow(memberId, memberName, memberRole, parentRole) {
             const row = document.createElement('div');
             row.className = 'member-row';
 
@@ -148,18 +150,46 @@
             name.textContent = `${memberName}${memberId === currentUserId ? ' (вы)' : ''}`;
             const role = document.createElement('span');
             role.className = 'member-role';
-            role.textContent = memberRole === 'child' ? 'Ребёнок' : 'Родитель';
+            const isSelf = memberId === currentUserId;
+            if (memberRole === 'child') {
+                role.textContent = 'Ребёнок';
+            } else if (PARENT_ROLE_LABELS[parentRole]) {
+                role.textContent = PARENT_ROLE_LABELS[parentRole];
+            } else if (isSelf) {
+                // сам ещё не выбрал — сразу предлагаем, а не просто пишем "Родитель"
+                role.textContent = 'Укажите, кем вы приходитесь ребёнку';
+                role.style.cursor = 'pointer';
+                role.style.textDecoration = 'underline';
+                role.addEventListener('click', promptParentRole);
+            } else {
+                role.textContent = 'Родитель';
+            }
             text.append(name, role);
             info.append(avatar, text);
 
-            const removeButton = document.createElement('button');
-            removeButton.className = 'btn-delete';
-            removeButton.textContent = 'Удалить';
-            removeButton.addEventListener('click', () => removeMember(memberId, memberName));
-            if (memberId === currentUserId) removeButton.disabled = true;
+            row.appendChild(info);
 
-            row.append(info, removeButton);
+            if (isSelf && memberRole === 'parent') {
+                const changeButton = document.createElement('button');
+                changeButton.className = 'btn-delete';
+                changeButton.textContent = 'Изменить роль';
+                changeButton.addEventListener('click', promptParentRole);
+                row.appendChild(changeButton);
+            } else {
+                const removeButton = document.createElement('button');
+                removeButton.className = 'btn-delete';
+                removeButton.textContent = 'Удалить';
+                removeButton.addEventListener('click', () => removeMember(memberId, memberName));
+                if (isSelf) removeButton.disabled = true;
+                row.appendChild(removeButton);
+            }
+
             container.appendChild(row);
+        }
+
+        function promptParentRole() {
+            tg.sendData('set_parent_role_prompt');
+            tg.close();
         }
 
         if (membersParam && membersParam !== 'none') {
@@ -171,8 +201,9 @@
                 const memberData = item.slice(separator + 1).split('^');
                 const mName = memberData[0];
                 const mRole = memberData[1];
+                const mParentRole = memberData[2];
                 if (/^\d+$/.test(mId) && mName && (mRole === 'child' || mRole === 'parent')) {
-                    addMemberRow(mId, mName, mRole);
+                    addMemberRow(mId, mName, mRole, mParentRole);
                 }
             });
         }
