@@ -5,44 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Состав семьи</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: var(--tg-theme-secondary-bg-color, #f5f1e8);
-            --card: var(--tg-theme-bg-color, #ffffff);
-            --text: var(--tg-theme-text-color, #2b2621);
-            --hint: var(--tg-theme-hint-color, #8a8178);
-            --accent: var(--tg-theme-button-color, #2f8f8a);
-            --border: rgba(43, 38, 33, 0.08);
+            /* фон/карточки/текст наследуются из реальной темы Telegram, с тёплым книжным фолбэком вне Telegram */
+            --bg: var(--tg-theme-secondary-bg-color, #F1E7D2);
+            --card: var(--tg-theme-bg-color, #FBF6EA);
+            --text: var(--tg-theme-text-color, #2B2118);
+            --hint: var(--tg-theme-hint-color, #6B5D48);
+            /* фирменные акценты не зависят от акцента Telegram — совпадают с цветом лендинга/favicon */
+            --accent: #50BDB7;
+            --accent-text: #F1E6D3;
+            --accent-soft: rgba(80,189,183,0.10);
+            --danger: #ff3b30;
+            --danger-soft: rgba(255,59,48,0.12);
+            --border: rgba(43,33,24,0.14);
+            --shadow: rgba(43,33,24,0.16);
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --accent-text: #16241D;
+                --accent-soft: rgba(80,189,183,0.14);
+                --border: rgba(241,230,211,0.14);
+                --shadow: rgba(0,0,0,0.4);
+            }
         }
         * { box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg); color: var(--text); margin: 0; padding: 16px 16px 32px;
+            font-family: "Nunito Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg); color: var(--text); margin: 0; padding: 20px 16px 32px; line-height: 1.45;
         }
-        .header { text-align: center; margin-bottom: 18px; }
-        .header .emoji { font-size: 32px; margin-bottom: 4px; }
-        .header h1 { font-size: 19px; margin: 0 0 4px; color: var(--text); }
-        .header p { font-size: 13px; margin: 0; color: var(--hint); }
+        h1 { font-family: "Fraunces", Georgia, serif; }
+
+        .header { text-align: center; margin-bottom: 22px; }
+        .header .emoji {
+            width: 52px; height: 52px; margin: 0 auto 10px; border-radius: 16px;
+            background: var(--accent); display: flex; align-items: center; justify-content: center;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.14);
+        }
+        .header .emoji img { width: 30px; height: 30px; display: block; }
+        .header h1 { font-size: 21px; font-weight: 700; margin: 0 0 6px; letter-spacing: -0.01em; }
+        .header p { font-size: 13.5px; color: var(--hint); margin: 0; max-width: 32ch; margin-inline: auto; }
+
+        .invite-row { display: flex; gap: 10px; margin-bottom: 18px; }
+        .btn-invite {
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px;
+            background: var(--card); border: 1px solid var(--border); color: var(--text);
+            padding: 12px 10px; font-size: 13.5px; font-weight: 700; border-radius: 12px;
+            cursor: pointer; font-family: inherit; box-shadow: 0 4px 12px -8px var(--shadow);
+        }
+        .btn-invite:active { background: var(--accent-soft); }
+        .btn-invite svg { width: 17px; height: 17px; color: var(--accent); flex-shrink: 0; }
 
         .member-row {
             display: flex; justify-content: space-between; align-items: center;
             background: var(--card); border: 1px solid var(--border);
             border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            box-shadow: 0 4px 12px -8px var(--shadow);
         }
-        .member-info { display: flex; align-items: center; gap: 10px; }
+        .member-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
         .avatar {
             width: 38px; height: 38px; border-radius: 50%; display: flex;
             align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
-            background: rgba(47,143,138,0.12);
+            background: var(--accent-soft);
         }
-        .member-text { display: flex; flex-direction: column; }
-        .member-name { font-size: 15px; font-weight: 700; }
+        .member-text { display: flex; flex-direction: column; min-width: 0; }
+        .member-name { font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .member-role { font-size: 12px; color: var(--hint); margin-top: 1px; }
 
         .btn-delete {
-            background: rgba(255,59,48,0.12); color: #ff3b30; border: none;
+            background: var(--danger-soft); color: var(--danger); border: none;
             padding: 9px 14px; font-size: 13px; font-weight: 700; border-radius: 9px; cursor: pointer;
+            font-family: inherit; flex-shrink: 0; margin-left: 10px;
         }
         .btn-delete:active { background: rgba(255,59,48,0.22); }
         .btn-delete:disabled { opacity: 0.35; background: transparent; }
@@ -56,9 +92,20 @@
 <body>
 
     <div class="header">
-        <div class="emoji">👨‍👩‍👦</div>
+        <div class="emoji"><img src="logo-glyph.png" alt=""></div>
         <h1>Состав семьи</h1>
         <p>Здесь видно всех, кто подключён к общему аккаунту</p>
+    </div>
+
+    <div class="invite-row">
+        <button class="btn-invite" type="button" onclick="invite('child')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.6 3.1-6.5 7-6.5s7 2.9 7 6.5"/></svg>
+            Добавить ребёнка
+        </button>
+        <button class="btn-invite" type="button" onclick="invite('parent')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 11c1.8 0 3.2-1.5 3.2-3.2S17.8 4.5 16 4.5"/><path d="M18 14.3c2.4.6 4 2.7 4 5.2"/></svg>
+            Добавить родителя
+        </button>
     </div>
 
     <div id="membersContainer"></div>
@@ -76,6 +123,11 @@
         function showAlert(message) {
             if (tg.showAlert) tg.showAlert(message);
             else alert(message);
+        }
+
+        function invite(role) {
+            tg.sendData(role === 'parent' ? 'invite_parent' : 'invite_child');
+            tg.close();
         }
 
         function addMemberRow(memberId, memberName, memberRole) {
